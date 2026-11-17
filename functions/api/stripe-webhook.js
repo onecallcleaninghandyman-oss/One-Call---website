@@ -1,22 +1,33 @@
-async function verifyStripeSignature(payload, header, secret) {
-  const parts=header.split(',').map(x=>x.split('='));
-  const timestamp=parts.find(x=>x[0]==='t')?.[1];
-  const signatures=parts.filter(x=>x[0]==='v1').map(x=>x[1]);
-  if(!timestamp || !signatures.length) return false;
-  if(Math.abs(Date.now()/1000-Number(timestamp))>300) return false;
-  const key=await crypto.subtle.importKey('raw',new TextEncoder().encode(secret),{name:'HMAC',hash:'SHA-256'},false,['sign']);
-  const signed=await crypto.subtle.sign('HMAC',key,new TextEncoder().encode(`${timestamp}.${payload}`));
-  const expected=[...new Uint8Array(signed)].map(b=>b.toString(16).padStart(2,'0')).join('');
-  return signatures.some(sig=>sig.length===expected.length && [...sig].every((c,i)=>c===expected[i]));
+const encoder = new TextEncoder();
+
+function hex(buffer) {
+  return [...new Uint8Array(buffer)].map(b => b.toString(16).padStart(2, '0')).join('');
 }
-export async function onRequestPost({request,env}) {
-  if(!env.STRIPE_WEBHOOK_SECRET) return new Response('Webhook secret is not configured.',{status:503});
-  const raw=await request.text(); const sig=request.headers.get('Stripe-Signature')||'';
-  if(!await verifyStripeSignature(raw,sig,env.STRIPE_WEBHOOK_SECRET)) return new Response('Invalid signature.',{status:400});
-  const event=JSON.parse(raw);
-  if(event.type==='checkout.session.completed') {
-    // Verified payment event. Persist/email notifications can be added after selecting a booking store.
-    console.log('Verified paid booking', JSON.stringify({session:event.data.object.id,amount_total:event.data.object.amount_total,currency:event.data.object.currency,metadata:event.data.object.metadata}));
+
+async function verifyStripeSignature(payload, header, secret) {
+  if (!header || !secret) return false;
+  const parts = Object.fromEntries(header.split(',').map(item => item.split('=')));
+  const timestamp = Number(parts.t);
+  const signature = parts.v1;
+  if (!timestamp || !signature || Math.abs(Date.now() / 1000 - timestamp) > 300) return false;
+  const key = await crypto.subtle.importKey('raw', encoder.encode(secret), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
+  const signed = await crypto.subtle.sign('HMAC', key, encoder.encode(`${timestamp}.${payload}`));
+  return hex(signed) === signature;
+}
+
+export async function onRequestPost({ request, env }) {
+  const payload = await request.text();
+  const valid = await verifyStripeSignature(payload, request.headers.get('Stripe-Signature'), env.STRIPE_WEBHOOK_SECRET);
+  if (!valid) return new Response('Invalid signature', { status: 400 });
+  const event = JSON.parse(payload);
+  if (event.type === 'checkout.session.completed') {
+    const session = event.data.object;
+    console.log('Stripe booking payment completed', {
+      sessionId: session.id,
+      amountTotal: session.amount_total,
+      currency: session.currency,
+      metadata: session.metadata
+    });
   }
-  return new Response('ok',{status:200});
+  return Response.json({ received: true });
 }
