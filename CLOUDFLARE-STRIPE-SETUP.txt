@@ -1,0 +1,20 @@
+ONE CALL CLEANING — CLOUDFLARE PAGES + STRIPE
+
+This archive includes Cloudflare Pages Functions in /functions/api.
+
+Required Cloudflare Pages environment variables (Settings > Variables and Secrets):
+- STRIPE_PUBLISHABLE_KEY = your Stripe publishable key (pk_test_... for testing first)
+- STRIPE_SECRET_KEY = matching Stripe secret key (sk_test_... for testing first; mark as secret)
+- STRIPE_WEBHOOK_SECRET = webhook signing secret (whsec_...; mark as secret)
+
+Deploy after committing these files to the GitHub repository. Functions routes:
+GET  /api/config
+POST /api/create-checkout-session
+POST /api/stripe-webhook
+
+Create a Stripe webhook endpoint pointing to https://YOUR-SITE.pages.dev/api/stripe-webhook and subscribe to checkout.session.completed. Use the signing secret in STRIPE_WEBHOOK_SECRET.
+
+IMPORTANT:
+- Use Stripe TEST keys and a test webhook secret first. Do not use live keys until the full test payment is successful.
+- The server recalculates the service price from submitted booking selections. It does not trust a client-supplied total.
+- The webhook verifies Stripe's signature and logs verified completed payments. Durable booking storage, email notifications, and availability conflict prevention are not included yet; add these before relying on the website as a full booking-management system.
