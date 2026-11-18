@@ -2667,12 +2667,28 @@
         }
 
         const clientSecret = Promise.resolve(json.client_secret || json.clientSecret);
-        const checkout = stripe.initCheckoutFormSdk({ clientSecret });
+        const appearance = {
+          theme: 'flat',
+          labels: 'auto',
+          inputs: 'spaced',
+          variables: {
+            borderRadius: '4px',
+            colorBackground: '#ffffff',
+            colorDanger: '#df1b41',
+            colorPrimary: '#0570de',
+            colorSuccess: '#00c853',
+            colorText: '#30313d',
+            fontFamily: 'default',
+            fontSizeBase: '16px',
+            spacingUnit: '4px'
+          }
+        };
+        const checkout = stripe.initCheckoutFormSdk({ clientSecret, appearance });
         container.innerHTML = '';
 
         // Stripe Checkout uses the active payment-method configuration from the
         // Stripe Dashboard. Do not override individual methods in the client.
-        const form = checkout.createForm();
+        const form = checkout.createForm({ layout: 'expanded' });
         form.mount('#checkout-form');
         activeStripeForm = form;
 
