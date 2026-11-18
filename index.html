@@ -247,8 +247,7 @@
 
           <!-- CleanWhale-Style 4-Step Navigation Bar -->
           <div class="bg-white rounded-2xl p-2.5 sm:p-3.5 border border-slate-200/90 shadow-card" id="wizard-step-tabs-wrap">
-            <div class="grid grid-cols-4 gap-1.5 sm:gap-2" id="wizard-step-tabs">              <button type="button" onclick="goToStep(1)" data-step-tab="1"                      class="step-tab flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 py-2.5 px-1.5 rounded-xl text-xs font-bold transition cursor-pointer">                <span class="step-num w-6 h-6 rounded-full flex items-center justify-center text-xs font-extrabold">1</span>                <span class="hidden sm:inline">Services &amp; Add-ons</span>                <span class="sm:hidden text-[10px]">Services</span>              </button>              <button type="button" onclick="goToStep(2)" data-step-tab="2"
-                      class="step-tab flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 py-2.5 px-1.5 rounded-xl text-xs font-bold transition cursor-pointer">
+            <div class="grid grid-cols-4 gap-1.5 sm:gap-2" id="wizard-step-tabs">              <button type="button" onclick="goToStep(1)" data-step-tab="1"                      class="step-tab flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 py-2.5 px-1.5 rounded-xl text-xs font-bold transition cursor-pointer">                <span class="step-num w-6 h-6 rounded-full flex items-center justify-center text-xs font-extrabold">1</span>                <span class="hidden sm:inline">Services &amp; Add-ons</span>                <span class="sm:hidden text-[10px]">Services</span>              </button>              <button type="button" onclick="goToStep(2)" data-step-tab="2"                      class="step-tab flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 py-2.5 px-1.5 rounded-xl text-xs font-bold transition cursor-pointer">
                 <span class="step-num w-6 h-6 rounded-full flex items-center justify-center text-xs font-extrabold">2</span>
                 <span class="hidden sm:inline">Property Size</span>
                 <span class="sm:hidden text-[10px]">Scope</span>
@@ -497,8 +496,7 @@
                   <div class="addon-card p-3 rounded-xl border-2 bg-white transition flex flex-col justify-between gap-2" id="addon-card-ironing">
                     <div class="flex items-center justify-between gap-2">                      <label class="flex items-center gap-2 cursor-pointer">
                         <input type="checkbox" id="addon-ironing" onchange="toggleIroningAddon()"                               class="w-4 h-4 rounded border-slate-300 text-emeraldbrand focus:ring-emeraldbrand cursor-pointer" />
-                        <span class="font-display font-bold text-navy text-xs sm:text-sm">Ironing</span>
-                      </label>
+                        <span class="font-display font-bold text-navy text-xs sm:text-sm">Ironing</span>                      </label>
                       <span class="text-xs font-extrabold text-emeraldbrand bg-emeraldbrand-tint px-2 py-0.5 rounded-full shrink-0">+€22/hr</span>
                     </div>
                     <div class="flex items-center justify-between pt-1.5 border-t border-slate-100">
@@ -748,7 +746,6 @@
               </p>            </div>          </div>
 
         </div>
-
         <!-- RIGHT COLUMN: STICKY LIVE SUMMARY SIDEBAR -->
         <aside class="lg:col-span-4 lg:sticky lg:top-24">
           <div class="bg-white rounded-3xl border border-slate-200 shadow-sticky overflow-hidden">
@@ -997,7 +994,6 @@
           <button type="button" onclick="jumpToService('regular')" class="w-full py-2.5 px-4 rounded-xl bg-slate-100 hover:bg-emeraldbrand hover:text-white text-navy font-bold text-xs transition cursor-pointer">            Book Regular Cleaning →
           </button>
         </div>
-
         <!-- Card 2: Deep Cleaning -->
         <div class="bg-white rounded-3xl p-6 border border-slate-200/90 shadow-card flex flex-col justify-between hover:border-emeraldbrand/50 transition">
           <div>
@@ -1247,7 +1243,6 @@
       </div>
     </div>
   </section>
-
   <!-- =========================================================
        DEDICATED SECTION: OFFICE & COMMERCIAL CLEANING
   ========================================================== -->
@@ -1497,8 +1492,7 @@
             </p>
           </div>
           <div class="flex items-center gap-3 pt-4 border-t border-slate-100">
-            <div class="w-10 h-10 rounded-full bg-emeraldbrand text-white font-display font-bold flex items-center justify-center text-sm">DK</div>
-            <div>
+            <div class="w-10 h-10 rounded-full bg-emeraldbrand text-white font-display font-bold flex items-center justify-center text-sm">DK</div>            <div>
               <span class="font-display font-bold text-navy text-sm block">Declan Kavanagh</span>
               <span class="text-xs text-slate-500">Westport, Co. Mayo • Handyman &amp; Upholstery</span>
             </div>
@@ -1747,7 +1741,6 @@
 
       date: '',
       timeSlot: 'Morning (08:30 – 12:00)',
-
       addons: {
         oven: false,
         fridge: false,
@@ -1997,8 +1990,7 @@
             <button type="button" onclick="adjustBathrooms(-1)" aria-label="Decrease Bathrooms"
                     class="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 text-navy font-extrabold transition cursor-pointer">-</button>
             <span class="min-w-[96px] text-center text-sm font-extrabold text-navy">
-              ${state.bathrooms} ${state.bathrooms === 1 ? 'Bathroom' : 'Bathrooms'}
-            </span>
+              ${state.bathrooms} ${state.bathrooms === 1 ? 'Bathroom' : 'Bathrooms'}            </span>
             <button type="button" onclick="adjustBathrooms(1)" aria-label="Increase Bathrooms"
                     class="w-8 h-8 rounded-lg bg-emeraldbrand hover:bg-emeraldbrand-dark text-white font-extrabold transition cursor-pointer">+</button>
           </div>
@@ -2248,7 +2240,6 @@
       renderStep2();
       updateSummary();
     }
-
     function renderQtyStepper(label, sub, stateKey, val) {
       return `
         <div class="p-3.5 rounded-2xl border border-slate-200 bg-white flex items-center justify-between gap-2">
@@ -2497,7 +2488,6 @@
     function formatEuro(val) {
       return Number.isInteger(val) ? `€${val}` : `€${val.toFixed(2)}`;
     }
-
     function formatReadableDate(isoStr) {
       if (!isoStr) return 'Select Date';
       const [y, m, d] = isoStr.split('-').map(Number);
@@ -2649,7 +2639,23 @@
         // Custom Checkout Elements: wallets are shown in the top row,
         // while all remaining enabled methods (including Amazon Pay and Link)
         // stay in the Payment Element below.
-        const checkout = stripe.initCheckoutElementsSdk({ clientSecret });
+        const checkout = stripe.initCheckoutElementsSdk({
+          clientSecret,
+          elementsOptions: {
+            appearance: {
+              theme: 'flat',
+              variables: {
+                colorPrimary: '#137547',
+                colorBackground: '#ffffff',
+                colorText: '#0B2545',
+                colorDanger: '#B42318',
+                fontFamily: 'Inter, system-ui, sans-serif',
+                borderRadius: '12px',
+                spacingUnit: '4px'
+              }
+            }
+          }
+        });
         container.innerHTML = `
           <div id="express-checkout-element" class="mb-4"></div>
           <div class="flex items-center gap-3 my-4 text-xs text-slate-400"><span class="h-px bg-slate-200 flex-1"></span><span>OR</span><span class="h-px bg-slate-200 flex-1"></span></div>
@@ -2747,7 +2753,6 @@
       document.getElementById('payment-success-view').classList.add('hidden');
       document.getElementById('modal-validation-msg').classList.add('hidden');
       document.getElementById('payment-modal').classList.remove('hidden');
-
       mountStripeCheckoutForm();
     }
 
