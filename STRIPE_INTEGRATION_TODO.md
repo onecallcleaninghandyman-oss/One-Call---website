@@ -1,72 +1,52 @@
-# Stripe Integration TODO — One Call Cleaning & Handyman Services
+# Stripe and booking integration — current setup
 
-## Values to Replace
+## Server-side architecture
 
-No sample placeholders remain in the Checkout Session creation call:
-- The integration charges one-time payments (`mode=payment`).
-- The amount and EUR line item are calculated dynamically on the server from the selected booking. No fixed Stripe Price ID is required.
+- `functions/_lib/booking.js`: shared server-side price calculation, required-field validation, booking-date and arrival-window validation.
+- `functions/api/config.js`: exposes only `STRIPE_PUBLISHABLE_KEY`.
+- `functions/api/create-checkout-session.js`: validates the booking, recalculates the amount in EUR, writes a pending D1 record, then creates a Stripe Custom Checkout Session.
+- `functions/api/booking-status.js`: verifies the Checkout Session directly with Stripe before the website displays a paid receipt.
+- `functions/api/create-booking.js`: persists cash bookings in D1 as `cash_due`.
+- `functions/api/stripe-webhook.js`: verifies Stripe signatures and updates paid/expired booking status; processed event IDs are stored to avoid duplicate handling.
+- `migrations/0001_create_bookings.sql`: D1 schema for bookings and webhook events.
 
-Before accepting live payments, verify the Cloudflare Pages environment variables:
-- `STRIPE_PUBLISHABLE_KEY` — publishable key for the intended Stripe mode.
-- `STRIPE_SECRET_KEY` — matching secret key for the same Stripe account and mode (server-side secret).
-- `STRIPE_WEBHOOK_SECRET` — signing secret for the webhook endpoint configured for that mode.
+## Cloudflare Pages configuration required
 
-## Configured Parameters
+1. Create a D1 database (suggested name: `one-call-bookings`).
+2. Apply `migrations/0001_create_bookings.sql`.
+3. Add a D1 binding named exactly `BOOKINGS_DB` in Pages → Settings → Functions → D1 database bindings. Bind the database in both Production and Preview as applicable.
+4. Configure:
+   - `STRIPE_PUBLISHABLE_KEY`
+   - `STRIPE_SECRET_KEY` (server-side secret; never place in HTML)
+   - `STRIPE_WEBHOOK_SECRET`
+5. In Stripe Dashboard, configure webhook URL `https://YOUR-DOMAIN/api/stripe-webhook` for:
+   - `checkout.session.completed`
+   - `checkout.session.async_payment_succeeded`
+   - `checkout.session.expired`
+6. Use matching Stripe test keys and webhook secret in Preview/Test first. Do not accept live payments until a successful end-to-end test is completed.
 
-**Files containing these parameters:**
-- [functions/api/create-checkout-session.js](functions/api/create-checkout-session.js)
-- [index.html](index.html)
+## Checkout details
 
-| Parameter | Value |
-|---|---|
-| `ui_mode` | `form` |
-| `mode` | `payment` |
-| `billing_address_collection` | `auto` |
-| | | `submit_type` | `pay` |
-| `saved_payment_method_options[payment_method_save]` | `enabled` |
-| `integration_identifier` | `custom_embedded_web_0002` |
-| `line_items` | One dynamically priced EUR line item, quantity 1 |
-| Stripe API version | `2026-10-28.endive` |
-| Stripe.js | `https://js.stripe.com/dahlia/stripe.js` |
-| Embedded form theme | `flat` |
-| Labels / inputs | `auto` / `spaced` |
-| Form layout | `expanded` |
-| Appearance | White background `#ffffff`, primary `#0570de`, text `#30313d`, danger `#df1b41`, success `#00c853`, 4px radius, 16px base font, 4px spacing |
+- Stripe Checkout Session mode: `payment`.
+- Checkout UI mode: `custom` (required by the Custom Checkout Elements SDK used in the website).
+- Amount: calculated server-side from the selected service and add-ons; currency is EUR.
+- No Stripe Product or fixed Price ID is required.
+- Apple Pay / Google Pay availability depends on Stripe payment-method settings, device/browser eligibility, and domain verification.
+- The browser must supply the complete booking (service, scope, date, time, contact details and address) before checkout session creation.
+- A successful client-side confirmation is not treated as proof of payment. The return page checks the session with Stripe, and the signed webhook is the durable payment update.
 
-`payment_method_collection` is intentionally omitted because this is a one-time payment flow; the Stripe instructions say to include it only for subscriptions. Payment methods are controlled by the active Payment Method configuration in Stripe Dashboard, not overridden in browser code.
+## End-to-end test checklist
 
-## Setup and Next Steps
+- Test each service type and add-on combination against the displayed total.
+- Verify Post-Renovation pricing is included in the server calculation.
+- Confirm empty name, phone, email, address, date or invalid email is rejected before payment.
+- Confirm invalid/unsupported arrival windows are rejected server-side.
+- Complete a Stripe test payment and confirm the D1 row becomes `paid`.
+- Abandon a Checkout Session and confirm the expiry webhook updates it to `expired`.
+- Create a cash booking and confirm the D1 row becomes `cash_due`.
+- Verify repeated webhook delivery does not create duplicate event records or duplicate bookings.
+- Test Apple Pay / Google Pay on eligible devices after enabling and verifying the domain in Stripe.
 
-1. In Cloudflare Pages, confirm `STRIPE_PUBLISHABLE_KEY` and `STRIPE_SECRET_KEY` are set for the same Stripe account and the same mode. Keep the secret key server-side only.
-2. Configure `STRIPE_WEBHOOK_SECRET` using the signing secret for the webhook endpoint in that same mode.
-3. Confirm the deployed domain is registered in the relevant Stripe mode for wallet methods, where applicable.
-4. Test the full booking flow in Stripe test mode first. Verify the server-calculated amount, booking metadata, embedded form appearance, payment confirmation, and return URL.
-5. Use Stripe's documented test card `4242 4242 4242 4242`, a future expiry date, any three-digit CVC, and any postal code.
-6. Confirm `checkout.session.completed` reaches the webhook and verify the event signature and `payment_status` before treating a booking as paid.
-7. After successful test payments, deploy to Cloudflare Pages and perform a small live payment test before accepting customer payments.
-8. Confirm successful payments are associated with durable booking records. The current webhook logs completed payment details; it does not yet persist bookings or send customer confirmation notifications.
+## Important limitation before launch
 
-## Project Structure
-
-- `functions/api/config.js` — returns the publishable key for the deployed environment.
-- `functions/api/create-checkout-session.js` — validates booking details, recalculates the total server-side, creates the Embedded Checkout Session, and returns its client secret.
-- `functions/api/stripe-webhook.js` — verifies Stripe webhook signatures and handles completed Checkout Sessions.
-- `index.html` — booking interface and embedded Checkout Form SDK initialization, appearance, and confirmation handling.
-
-No new server routes or infrastructure were added.
-
-## How the Integration Works
-
-1. The customer selects a service and enters booking details on the website.
-2. The browser sends the booking selections to the Cloudflare Pages Function.
-3. The server validates the customer details and recalculates the amount; it does not trust a browser-supplied total.
-4. The server creates a one-time EUR Embedded Checkout Session using the configured Checkout Studio parameters and returns `client_secret` as JSON.
-5. Stripe.js Dahlia initializes the embedded form with the configured appearance and expanded layout.
-6. The customer confirms payment in the Stripe-hosted embedded form.
-7. The website displays its current success view; production fulfilment must additionally rely on the verified webhook and durable booking storage.
-
-## Resources
-
-- Stripe Support: https://support.stripe.com
-- Stripe MCP documentation: https://docs.stripe.com/mcp
-- Stripe API keys best practices: https://docs.stripe.com/keys-best-practices
+The source-code integration is now prepared, but a real Cloudflare D1 database binding and Stripe environment secrets must be configured in the Cloudflare and Stripe dashboards. Those account-level settings cannot be inferred or safely created from this repository. Follow `DEPLOYMENT.md` before publishing live payments.
