@@ -2668,34 +2668,79 @@
 
         const clientSecret = Promise.resolve(json.client_secret || json.clientSecret);
 
-        // Let the active Checkout Studio integration control the checkout
-        // appearance and layout. Do not override its Dashboard configuration here.
-        const checkout = stripe.initCheckoutFormSdk({ clientSecret });
-        container.innerHTML = '';
+        // Custom Checkout Elements: wallets are shown in the top row,
+        // while all remaining enabled methods (including Amazon Pay and Link)
+        // stay in the Payment Element below.
+        const checkout = stripe.initCheckoutElementsSdk({ clientSecret });
+        container.innerHTML = `
+          <div id="express-checkout-element" class="mb-4"></div>
+          <div class="flex items-center gap-3 my-4 text-xs text-slate-400"><span class="h-px bg-slate-200 flex-1"></span><span>OR</span><span class="h-px bg-slate-200 flex-1"></span></div>
+          <div id="contact-details-element" class="mb-4"></div>
+          <div id="payment-element"></div>
+          <button id="stripe-pay-button" type="button" class="mt-5 w-full rounded-xl bg-emeraldbrand px-5 py-3.5 text-white font-bold text-sm hover:bg-emeraldbrand-dark transition">Pay securely</button>
+        `;
 
-        // Payment methods and the presentation are managed by Checkout Studio.
-        const form = checkout.createForm();
-        form.mount('#checkout-form');
-        activeStripeForm = form;
+        const expressCheckout = checkout.createExpressCheckoutElement({
+          emailRequired: true,
+          paymentMethods: {
+            applePay: 'always',
+            googlePay: 'always',
+            link: 'never',
+            amazonPay: 'never'
+          },
+          layout: { maxColumns: 2, maxRows: 1, overflow: 'never' }
+        });
+        expressCheckout.mount('#express-checkout-element');
+
+        const contactDetails = checkout.createContactDetailsElement();
+        contactDetails.mount('#contact-details-element');
+
+        const paymentElement = checkout.createPaymentElement();
+        paymentElement.mount('#payment-element');
 
         const loadActionsResult = await checkout.loadActions();
-        if (loadActionsResult.type === 'success') {
-          form.on('confirm', async (event) => {
-            try {
-              const result = await loadActionsResult.actions.confirm({ formConfirmEvent: event });
-              if (result && result.type === 'error') {
-                errBox.textContent = result.error.message || 'Payment confirmation failed.';
-                errBox.classList.remove('hidden');
-              } else {
-                showBookingSuccessReceipt('Online Payment (Stripe Checkout)');
-              }
-            } catch (error) {
-              console.error('Payment confirmation error:', error);
-              errBox.textContent = error.message || 'Payment confirmation error.';
-              errBox.classList.remove('hidden');
-            }
-          });
+        if (loadActionsResult.type !== 'success') {
+          throw new Error(loadActionsResult.error?.message || 'Unable to load Stripe payment form.');
         }
+        const actions = loadActionsResult.actions;
+
+        const showPaymentError = (error) => {
+          errBox.textContent = error?.message || 'Payment confirmation failed.';
+          errBox.classList.remove('hidden');
+        };
+
+        expressCheckout.on('confirm', async (event) => {
+          try {
+            const result = await actions.confirm({ expressCheckoutConfirmEvent: event });
+            if (result?.type === 'error' || result?.error) showPaymentError(result.error);
+            else showBookingSuccessReceipt('Online Payment (Stripe Checkout)');
+          } catch (error) {
+            console.error('Express Checkout confirmation error:', error);
+            showPaymentError(error);
+          }
+        });
+
+        document.getElementById('stripe-pay-button').addEventListener('click', async () => {
+          const button = document.getElementById('stripe-pay-button');
+          button.disabled = true;
+          button.textContent = 'Processing...';
+          errBox.classList.add('hidden');
+          try {
+            const result = await actions.confirm();
+            if (result?.type === 'error' || result?.error) {
+              showPaymentError(result.error);
+              button.disabled = false;
+              button.textContent = 'Pay securely';
+            } else {
+              showBookingSuccessReceipt('Online Payment (Stripe Checkout)');
+            }
+          } catch (error) {
+            console.error('Payment confirmation error:', error);
+            showPaymentError(error);
+            button.disabled = false;
+            button.textContent = 'Pay securely';
+          }
+        });
       } catch (err) {
         console.error('Stripe initialization error:', err);
         container.innerHTML = `
