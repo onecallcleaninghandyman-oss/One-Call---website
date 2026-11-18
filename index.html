@@ -2670,10 +2670,22 @@
             availablePaymentMethods: methods
           });
         });
-        expressCheckout.on('loaderror', (event) => {
-          console.error('[Stripe Express Checkout] Load error:', event);
+        expressCheckout.on('availablepaymentmethodschange', (event) => {
+          const methods = event?.paymentMethods || {};
+          const apple = !!methods.applePay?.available;
+          const google = !!methods.googlePay?.available;
           const diagnostic = document.getElementById('express-checkout-diagnostic');
-          if (diagnostic) diagnostic.textContent = 'Wallet buttons could not load. Check the browser console for Stripe details.';
+          if (diagnostic) {
+            diagnostic.textContent = `Apple Pay: ${apple ? 'available' : 'not available'} · Google Pay: ${google ? 'available' : 'not available'}`;
+            diagnostic.dataset.applePay = apple ? 'available' : 'unavailable';
+            diagnostic.dataset.googlePay = google ? 'available' : 'unavailable';
+          }
+          console.info('[Stripe Express Checkout] Available payment methods changed:', methods);
+        });
+        expressCheckout.on('loaderror', (event) => {
+          console.error('[Stripe Express Checkout] Load error:', event?.error || event);
+          const diagnostic = document.getElementById('express-checkout-diagnostic');
+          if (diagnostic) diagnostic.textContent = 'Wallet buttons could not load: ' + (event?.error?.message || 'Stripe load error');
         });
         expressCheckout.mount('#express-checkout-element');
 
