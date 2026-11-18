@@ -71,18 +71,12 @@ export async function onRequestPost({ request, env }) {
     params.set('ui_mode', 'elements');
     params.set('locale', 'en');
     params.set('integration_identifier', 'custom_embedded_web_0002');
-    params.set('customer_email', String(customer.email).trim().slice(0, 500));
     params.set('return_url', `${origin}/?payment=complete&session_id={CHECKOUT_SESSION_ID}`);
     params.set('line_items[0][quantity]', '1');
     params.set('line_items[0][price_data][currency]', 'eur');
     params.set('line_items[0][price_data][unit_amount]', String(quote.amount));
     params.set('line_items[0][price_data][product_data][name]', quote.title);
     params.set('line_items[0][price_data][product_data][description]', quote.description.slice(0, 300));
-    params.set('metadata[customer_name]', String(customer.name).slice(0, 500));
-    params.set('metadata[customer_email]', String(customer.email).trim().slice(0, 500));
-    params.set('metadata[customer_phone]', String(customer.phone).slice(0, 500));
-    params.set('metadata[customer_address]', String(customer.address).slice(0, 500));
-    params.set('metadata[customer_town]', String(customer.town || '').slice(0, 200));
     params.set('metadata[booking_date]', String(booking.date || '').slice(0, 100));
     params.set('metadata[booking_time]', String(booking.timeSlot || '').slice(0, 200));
     params.set('metadata[service]', quote.title);
