@@ -11,7 +11,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet" />
 
-  <!-- Stripe.js (Dahlia) — loaded directly from js.stripe.com -->
+  <!-- Stripe.js (Endive) — loaded directly from js.stripe.com -->
   <script src="https://js.stripe.com/endive/stripe.js"></script>
 
   <!-- Tailwind CSS -->
@@ -247,8 +247,7 @@
 
           <!-- CleanWhale-Style 4-Step Navigation Bar -->
           <div class="bg-white rounded-2xl p-2.5 sm:p-3.5 border border-slate-200/90 shadow-card" id="wizard-step-tabs-wrap">
-            <div class="grid grid-cols-4 gap-1.5 sm:gap-2" id="wizard-step-tabs">              <button type="button" onclick="goToStep(1)" data-step-tab="1"                      class="step-tab flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 py-2.5 px-1.5 rounded-xl text-xs font-bold transition cursor-pointer">                <span class="step-num w-6 h-6 rounded-full flex items-center justify-center text-xs font-extrabold">1</span>                <span class="hidden sm:inline">Services &amp; Add-ons</span>                <span class="sm:hidden text-[10px]">Services</span>
-              </button>
+            <div class="grid grid-cols-4 gap-1.5 sm:gap-2" id="wizard-step-tabs">              <button type="button" onclick="goToStep(1)" data-step-tab="1"                      class="step-tab flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 py-2.5 px-1.5 rounded-xl text-xs font-bold transition cursor-pointer">                <span class="step-num w-6 h-6 rounded-full flex items-center justify-center text-xs font-extrabold">1</span>                <span class="hidden sm:inline">Services &amp; Add-ons</span>                <span class="sm:hidden text-[10px]">Services</span>              </button>
               <button type="button" onclick="goToStep(2)" data-step-tab="2"
                       class="step-tab flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 py-2.5 px-1.5 rounded-xl text-xs font-bold transition cursor-pointer">
                 <span class="step-num w-6 h-6 rounded-full flex items-center justify-center text-xs font-extrabold">2</span>
@@ -497,8 +496,7 @@
                         <button type="button" onclick="adjustWindowCount(1)" class="w-6 h-6 rounded-md bg-white text-navy font-bold shadow-xs hover:bg-slate-50 cursor-pointer">+</button>                      </div>
                     </div>                  </div>
                   <div class="addon-card p-3 rounded-xl border-2 bg-white transition flex flex-col justify-between gap-2" id="addon-card-ironing">
-                    <div class="flex items-center justify-between gap-2">
-                      <label class="flex items-center gap-2 cursor-pointer">
+                    <div class="flex items-center justify-between gap-2">                      <label class="flex items-center gap-2 cursor-pointer">
                         <input type="checkbox" id="addon-ironing" onchange="toggleIroningAddon()"
                                class="w-4 h-4 rounded border-slate-300 text-emeraldbrand focus:ring-emeraldbrand cursor-pointer" />
                         <span class="font-display font-bold text-navy text-xs sm:text-sm">Ironing</span>
@@ -638,6 +636,8 @@
                 </div>
               </div>
 
+              <div id="step3-validation-msg" class="hidden mb-4 text-xs font-bold text-red-700 bg-red-50 border border-red-200 rounded-xl px-4 py-3"></div>
+
               <div class="mt-8 flex items-center justify-between pt-6 border-t border-slate-100">
                 <button type="button" onclick="prevStep()"
                         class="inline-flex items-center gap-2 text-slate-600 hover:text-navy font-bold px-4 py-3 rounded-xl hover:bg-slate-100 transition cursor-pointer">
@@ -747,8 +747,7 @@
                 <span class="text-[10px] font-extrabold uppercase tracking-wider bg-amber-200/70 text-amber-900 px-2 py-0.5 rounded-full">Good to Know</span>
               </div>              <p class="text-xs sm:text-sm text-slate-700 leading-relaxed">
                 Please note that if your property has a high level of heavy contamination, stubborn dirt, or neglect, you may need to add an extra hour or two to your booking depending on the actual condition of the premises to ensure the best possible results.
-              </p>
-            </div>
+              </p>            </div>
           </div>
 
         </div>
@@ -997,8 +996,7 @@
               <li class="flex items-start gap-2"><span class="text-emeraldbrand font-bold">✓</span><span>Dusting furniture, shelves, radiators, TV units, picture frames &amp; windowsills.</span></li>              <li class="flex items-start gap-2"><span class="text-emeraldbrand font-bold">✓</span><span>Bathroom scrubbing &amp; sanitization of sinks, taps, showers, baths, toilets &amp; mirrors.</span></li>
               <li class="flex items-start gap-2"><span class="text-emeraldbrand font-bold">✓</span><span>Kitchen worktops, hob surface, sink, splashback &amp; external appliance wipe-down.</span></li>
               <li class="flex items-start gap-2"><span class="text-emeraldbrand font-bold">✓</span><span>Making beds (on request), tidying surfaces, and emptying all household waste bins.</span></li>
-            </ul>
-          </div>
+            </ul>          </div>
           <button type="button" onclick="jumpToService('regular')" class="w-full py-2.5 px-4 rounded-xl bg-slate-100 hover:bg-emeraldbrand hover:text-white text-navy font-bold text-xs transition cursor-pointer">
             Book Regular Cleaning →
           </button>
@@ -1247,8 +1245,7 @@
               <h4 class="font-display font-bold text-navy">Extra Cleaning Hour(s)</h4>
               <span class="text-xs font-extrabold text-emeraldbrand bg-emeraldbrand-tint px-2.5 py-0.5 rounded-full">+€22 / hr</span>
             </div>
-            <p class="text-xs text-slate-600 leading-relaxed">
-              Add dedicated extra time whenever a property has heavy build-up, stubborn grime, or neglected areas—ensuring our team never rushes and delivers thorough, spotless results.
+            <p class="text-xs text-slate-600 leading-relaxed">              Add dedicated extra time whenever a property has heavy build-up, stubborn grime, or neglected areas—ensuring our team never rushes and delivers thorough, spotless results.
             </p>
           </div>
         </div>
@@ -1497,8 +1494,7 @@
           </div>
         </div>
 
-        <div class="bg-white rounded-3xl p-7 border border-slate-200 shadow-card flex flex-col justify-between">
-          <div>
+        <div class="bg-white rounded-3xl p-7 border border-slate-200 shadow-card flex flex-col justify-between">          <div>
             <div class="flex items-center gap-1 text-amber-400 mb-4">
               <span>★</span><span>★</span><span>★</span><span>★</span><span>★</span>
             </div>
@@ -1747,8 +1743,7 @@
       rugSqm: 0,
       sofa2Qty: 0,
       sofa3Qty: 0,
-      sofaCornerQty: 0,
-      mattressQty: 0,
+      sofaCornerQty: 0,      mattressQty: 0,
 
       handymanFurniture: 1,
       handymanTv: 0,
@@ -1997,8 +1992,7 @@
             <div class="w-10 h-10 rounded-xl bg-white border border-slate-200 text-emeraldbrand flex items-center justify-center shrink-0">
               <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M4 12h16M5 12v4a3 3 0 003 3h8a3 3 0 003-3v-4M7 12V7a2 2 0 012-2h1"/>
-              </svg>
-            </div>
+              </svg>            </div>
             <div>
               <span class="font-display font-bold text-navy text-sm sm:text-base block">Number of Bathrooms / En-suites (€39 / bathroom)</span>
               <span class="text-xs text-slate-500">
@@ -2247,8 +2241,7 @@
                 </div>
                 <input type="range" min="0" max="100" step="5" value="${state.handymanPaintSqm}"
                        oninput="state.handymanPaintSqm = Number(this.value); renderStep2(); updateSummary();" class="w-full cursor-pointer" />
-              </div>
-            </div>
+              </div>            </div>
             <p class="text-xs text-slate-500 bg-slate-50 p-3 rounded-xl border border-slate-200">
               Minimum €60 call-out fee applies to all standalone handyman visits across Castlebar &amp; County Mayo. Silicone rate (€5/m²) includes sealant &amp; materials.
             </p>
@@ -2497,8 +2490,7 @@
         addonItems.push({ name: `Window Cleaning (${state.addons.windowsCount}x)`, price: winPrice });
         addonsTotal += winPrice;
       }
-      if (state.addons.ironingHours > 0) {
-        const ironPrice = state.addons.ironingHours * 22;
+      if (state.addons.ironingHours > 0) {        const ironPrice = state.addons.ironingHours * 22;
         addonItems.push({ name: `Ironing (${state.addons.ironingHours}h)`, price: ironPrice });
         addonsTotal += ironPrice;
       }
@@ -2603,17 +2595,22 @@
         document.getElementById('client-email').classList.add('border-red-500','ring-2','ring-red-200');
         showStep4Error('Please enter a valid email address.'); document.getElementById('client-email').focus(); return false;
       }
-      if (!state.date) { showStep4Error('Please select a booking date.'); goToStep(3); return false; }
+      if (!state.date) { showStep3Error('Please select a booking date.'); goToStep(3); return false; }
       const selected = new Date(state.date + 'T12:00:00');
       const today = new Date(); today.setHours(0,0,0,0);
-      if (Number.isNaN(selected.getTime()) || selected < today) { showStep4Error('Please select a valid future booking date.'); goToStep(3); return false; }
-      if (!state.timeSlot) { showStep4Error('Please select an arrival time.'); goToStep(3); return false; }
+      if (Number.isNaN(selected.getTime()) || selected < today) { showStep3Error('Please select a valid future booking date.'); goToStep(3); return false; }
+      if (!state.timeSlot) { showStep3Error('Please select an arrival time.'); goToStep(3); return false; }
       document.getElementById('step4-validation-msg').classList.add('hidden');
       return true;
     }
 
     function showStep4Error(message) {
       const err = document.getElementById('step4-validation-msg');
+      err.textContent = message; err.classList.remove('hidden');
+    }
+
+    function showStep3Error(message) {
+      const err = document.getElementById('step3-validation-msg');
       err.textContent = message; err.classList.remove('hidden');
     }
 
@@ -2748,7 +2745,6 @@
         document.getElementById('stripe-setup-error').textContent = err.message || 'Unable to initialize Stripe Checkout.';
       }
     }
-
     function openStripeCheckoutModal() {
       if (!validateBookingForm()) return;
       pendingBookingId = crypto.randomUUID();
@@ -2829,6 +2825,10 @@
         if (!response.ok) throw new Error(result.error || 'Unable to verify your payment.');
         if (result.status === 'paid') {
           document.getElementById('success-receipt-text').textContent = `Payment confirmed. Your booking has been saved successfully. Booking reference: OC-${String(result.bookingId).slice(0,8).toUpperCase()}.`;
+        } else if (result.status === 'payment_failed') {
+          document.getElementById('success-receipt-text').textContent = 'The payment was not completed. No booking payment was recorded. You can return to the booking page and try another payment method.';
+        } else if (result.status === 'expired') {
+          document.getElementById('success-receipt-text').textContent = 'This payment session has expired. Please return to the booking page and start a new payment.';
         } else {
           document.getElementById('success-receipt-text').textContent = 'Your payment is still processing. We will confirm the booking once Stripe confirms the payment. Please do not submit another payment.';
         }
