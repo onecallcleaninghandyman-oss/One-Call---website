@@ -27,6 +27,8 @@ export async function onRequestPost({request,env}){
             .bind(session.id,now,id,session.amount_total).run();
           if(result.meta?.changes!==1){console.error('Paid Stripe session did not match a pending booking',{eventId:event.id,sessionId:session.id,bookingId:id});return new Response('Booking or amount mismatch',{status:500});}
         }
+      } else if(event.type==='checkout.session.async_payment_failed'){
+        await env.BOOKINGS_DB.prepare("UPDATE bookings SET payment_status='payment_failed',updated_at=? WHERE id=? AND payment_method='stripe' AND payment_status='pending_payment'").bind(now,id).run();
       } else if(event.type==='checkout.session.expired'){
         await env.BOOKINGS_DB.prepare("UPDATE bookings SET payment_status='expired',updated_at=? WHERE id=? AND payment_method='stripe' AND payment_status='pending_payment'").bind(now,id).run();
       }
