@@ -65,7 +65,6 @@ export async function onRequestPost({ request, env }) {
     const origin = new URL(request.url).origin;
     const params = new URLSearchParams();
     params.set('mode', 'payment');
-    params.append('payment_method_types[]', 'card');
     params.set('ui_mode', 'form');
     params.set('billing_address_collection', 'auto');
 params.set('automatic_tax[enabled]', 'false');
