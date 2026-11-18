@@ -247,8 +247,7 @@
 
           <!-- CleanWhale-Style 4-Step Navigation Bar -->
           <div class="bg-white rounded-2xl p-2.5 sm:p-3.5 border border-slate-200/90 shadow-card" id="wizard-step-tabs-wrap">
-            <div class="grid grid-cols-4 gap-1.5 sm:gap-2" id="wizard-step-tabs">              <button type="button" onclick="goToStep(1)" data-step-tab="1"                      class="step-tab flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 py-2.5 px-1.5 rounded-xl text-xs font-bold transition cursor-pointer">                <span class="step-num w-6 h-6 rounded-full flex items-center justify-center text-xs font-extrabold">1</span>                <span class="hidden sm:inline">Services &amp; Add-ons</span>                <span class="sm:hidden text-[10px]">Services</span>              </button>              <button type="button" onclick="goToStep(2)" data-step-tab="2"                      class="step-tab flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 py-2.5 px-1.5 rounded-xl text-xs font-bold transition cursor-pointer">                <span class="step-num w-6 h-6 rounded-full flex items-center justify-center text-xs font-extrabold">2</span>
-                <span class="hidden sm:inline">Property Size</span>
+            <div class="grid grid-cols-4 gap-1.5 sm:gap-2" id="wizard-step-tabs">              <button type="button" onclick="goToStep(1)" data-step-tab="1"                      class="step-tab flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 py-2.5 px-1.5 rounded-xl text-xs font-bold transition cursor-pointer">                <span class="step-num w-6 h-6 rounded-full flex items-center justify-center text-xs font-extrabold">1</span>                <span class="hidden sm:inline">Services &amp; Add-ons</span>                <span class="sm:hidden text-[10px]">Services</span>              </button>              <button type="button" onclick="goToStep(2)" data-step-tab="2"                      class="step-tab flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 py-2.5 px-1.5 rounded-xl text-xs font-bold transition cursor-pointer">                <span class="step-num w-6 h-6 rounded-full flex items-center justify-center text-xs font-extrabold">2</span>                <span class="hidden sm:inline">Property Size</span>
                 <span class="sm:hidden text-[10px]">Scope</span>
               </button>
               <button type="button" onclick="goToStep(3)" data-step-tab="3"
@@ -497,8 +496,7 @@
                         <input type="checkbox" id="addon-ironing" onchange="toggleIroningAddon()"                               class="w-4 h-4 rounded border-slate-300 text-emeraldbrand focus:ring-emeraldbrand cursor-pointer" />
                         <span class="font-display font-bold text-navy text-xs sm:text-sm">Ironing</span>                      </label>
                       <span class="text-xs font-extrabold text-emeraldbrand bg-emeraldbrand-tint px-2 py-0.5 rounded-full shrink-0">+€22/hr</span>                    </div>
-                    <div class="flex items-center justify-between pt-1.5 border-t border-slate-100">
-                      <span class="text-[11px] font-semibold text-slate-500">Hours:</span>
+                    <div class="flex items-center justify-between pt-1.5 border-t border-slate-100">                      <span class="text-[11px] font-semibold text-slate-500">Hours:</span>
                       <div class="inline-flex items-center gap-1.5 bg-slate-100 rounded-lg p-0.5">
                         <button type="button" onclick="adjustIroningHours(-1)" class="w-6 h-6 rounded-md bg-white text-navy font-bold shadow-xs hover:bg-slate-50 cursor-pointer">-</button>
                         <span id="ironing-hours-display" class="w-5 text-center text-xs font-extrabold text-navy">0</span>
@@ -747,8 +745,7 @@
         <!-- RIGHT COLUMN: STICKY LIVE SUMMARY SIDEBAR -->
         <aside class="lg:col-span-4 lg:sticky lg:top-24">          <div class="bg-white rounded-3xl border border-slate-200 shadow-sticky overflow-hidden">
             <div class="bg-navy px-5 py-3 text-white flex items-center justify-between shrink-0 sticky top-0 z-10">
-              <div>
-                <span class="text-[11px] font-bold uppercase tracking-widest text-emerald-300">Booking Summary</span>
+              <div>                <span class="text-[11px] font-bold uppercase tracking-widest text-emerald-300">Booking Summary</span>
                 <h3 class="font-display font-bold text-lg">Your Instant Quote</h3>
               </div>
               <span class="bg-white/10 text-xs font-bold px-3 py-1 rounded-full">Co. Mayo</span>
@@ -997,8 +994,7 @@
             <div class="flex items-center justify-between gap-3 mb-4">              <div class="w-12 h-12 rounded-2xl bg-emeraldbrand-tint text-emeraldbrand flex items-center justify-center">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>
               </div>
-              <span class="text-xs font-extrabold text-emeraldbrand bg-emeraldbrand-tint px-3 py-1 rounded-full">From €156 fixed</span>
-            </div>
+              <span class="text-xs font-extrabold text-emeraldbrand bg-emeraldbrand-tint px-3 py-1 rounded-full">From €156 fixed</span>            </div>
             <h3 class="font-display text-xl font-extrabold text-navy mb-2">Deep Cleaning</h3>
             <p class="text-xs text-slate-500 mb-3">Deep cleaning of the entire home — intensive top-to-bottom sanitization for seasonal resets.</p>
             <ul class="space-y-1.5 text-xs text-slate-600 mb-5">
@@ -1247,7 +1243,6 @@
 
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
-
         <div class="lg:col-span-7 space-y-6">
           <div class="inline-flex items-center gap-2 bg-white/10 text-emerald-300 px-3.5 py-1.5 rounded-full text-xs font-bold tracking-wider uppercase border border-white/15">
             B2B Commercial Contracts • County Mayo
@@ -1497,8 +1492,7 @@
           <div>
             <div class="flex items-center gap-1 text-amber-400 mb-4">
               <span>★</span><span>★</span><span>★</span><span>★</span><span>★</span>
-            </div>
-            <p class="text-slate-700 text-sm leading-relaxed mb-6">
+            </div>            <p class="text-slate-700 text-sm leading-relaxed mb-6">
               "Transparent Euro pricing with zero guesswork and loved being able to pay cash directly to the cleaner once everything was inspected. We got our full deposit back without a single query from the letting agent!"
             </p>
           </div>
@@ -1747,8 +1741,7 @@
       },
 
       client: {
-        name: '',
-        phone: '',
+        name: '',        phone: '',
         email: '',
         address: '',
         town: 'Castlebar',
@@ -1997,8 +1990,7 @@
     }
 
     function renderStep2() {
-      const container = document.getElementById('step2-dynamic-body');
-      const title = document.getElementById('step2-title');
+      const container = document.getElementById('step2-dynamic-body');      const title = document.getElementById('step2-title');
       if (!container || !title) return;
 
       if (state.service === 'regular') {
@@ -2247,8 +2239,7 @@
       `;
     }
 
-    function adjustStateQty(key, delta) {
-      state[key] = Math.max(0, state[key] + delta);
+    function adjustStateQty(key, delta) {      state[key] = Math.max(0, state[key] + delta);
       renderStep2();
       updateSummary();
     }
@@ -2497,8 +2488,7 @@
           <div class="flex items-center justify-between text-slate-700">
             <span>+ ${item.name}</span>
             <span class="font-bold text-navy">${formatEuro(item.price)}</span>
-          </div>
-        `).join('');
+          </div>        `).join('');
       } else {
         addonsList.innerHTML = `<span class="text-slate-400 italic">None selected</span>`;
       }
@@ -2747,8 +2737,7 @@
 
     function closePaymentModal() {
       cleanupStripeForm();
-      document.getElementById('payment-modal').classList.add('hidden');
-    }
+      document.getElementById('payment-modal').classList.add('hidden');    }
 
     document.addEventListener('keydown', (event) => {
       if (event.key === 'Escape') {
@@ -2814,6 +2803,9 @@
         } else if (result.status === 'payment_failed') {
           document.querySelector('#payment-success-view h4').textContent = 'Payment Not Completed';
           document.getElementById('success-receipt-text').textContent = 'The payment was not completed. No booking payment was recorded. You can return to the booking page and try another payment method.';
+        } else if (result.status === 'open') {
+          document.querySelector('#payment-success-view h4').textContent = 'Payment Not Completed';
+          document.getElementById('success-receipt-text').textContent = 'The payment was cancelled or did not complete. No successful payment was recorded. Please return to the booking form to try again.';
         } else if (result.status === 'expired') {
           document.querySelector('#payment-success-view h4').textContent = 'Payment Session Expired';
           document.getElementById('success-receipt-text').textContent = 'This payment session has expired. Please return to the booking page and start a new payment.';
