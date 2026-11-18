@@ -67,8 +67,6 @@ export async function onRequestPost({ request, env }) {
     params.set('mode', 'payment');
     params.set('ui_mode', 'form');
     params.set('billing_address_collection', 'auto');
-    params.set('phone_number_collection[enabled]', 'false');
-    params.set('automatic_tax[enabled]', 'false');
     params.set('submit_type', 'pay');
     params.set('saved_payment_method_options[payment_method_save]', 'enabled');
     params.set('integration_identifier', 'custom_embedded_web_0002');
@@ -92,7 +90,7 @@ export async function onRequestPost({ request, env }) {
       headers: {
   'Authorization': `Bearer ${env.STRIPE_SECRET_KEY}`,
   'Content-Type': 'application/x-www-form-urlencoded',
-  'Stripe-Version': '2026-03-25.dahlia'
+  'Stripe-Version': '2026-10-28.endive'
 },
       body: params
     });
