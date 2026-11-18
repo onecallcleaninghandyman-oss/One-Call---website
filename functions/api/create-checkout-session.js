@@ -68,7 +68,6 @@ export async function onRequestPost({ request, env }) {
     params.set('ui_mode', 'form');
     params.set('billing_address_collection', 'auto');
     params.set('submit_type', 'pay');
-    params.set('saved_payment_method_options[payment_method_save]', 'enabled');
     params.set('integration_identifier', 'custom_embedded_web_0002');
     params.set('return_url', `${origin}/?payment=complete&session_id={CHECKOUT_SESSION_ID}`);
     params.set('line_items[0][quantity]', '1');
