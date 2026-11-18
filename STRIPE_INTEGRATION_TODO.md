@@ -27,6 +27,19 @@ No sample placeholders remain in the existing Checkout Session creation call:
 
 The existing server-side booking price calculation, customer/booking metadata, return URL, and JSON client-secret response have been preserved. `payment_method_collection` is not set because this is a one-time payment integration.
 
+## Payment methods
+
+The embedded Checkout form does not override individual payment methods in the browser. Stripe uses the active payment-method configuration in the Stripe Dashboard. The currently verified LIVE Default configuration has these methods enabled:
+- Card (Visa / Mastercard; Apple Pay and Google Pay appear where supported)
+- Amazon Pay
+- Apple Pay
+- Google Pay
+- Link
+- Klarna
+- Revolut Pay
+
+Keep this list managed in Stripe Dashboard. Do not add client-side `expressCheckout.paymentMethods` overrides that hide methods enabled in the account.
+
 ## Setup and Next Steps
 
 1. In Cloudflare Pages, confirm that `STRIPE_SECRET_KEY` and `STRIPE_PUBLISHABLE_KEY` are configured as environment variables for the correct environment (Preview and Production as applicable). Keep the secret key server-side only.
