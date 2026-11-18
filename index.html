@@ -2638,7 +2638,6 @@
         });
         container.innerHTML = `
           <div id="express-checkout-element" class="mb-2"></div>
-          <div id="express-checkout-diagnostic" class="mb-3 text-xs text-slate-500" role="status" aria-live="polite">Checking Apple Pay and Google Pay availability…</div>
           <div class="flex items-center gap-3 my-4 text-xs text-slate-400"><span class="h-px bg-slate-200 flex-1"></span><span>OR</span><span class="h-px bg-slate-200 flex-1"></span></div>
           <div id="payment-element"></div>
           <button id="stripe-pay-button" type="button" class="mt-5 w-full rounded-xl bg-emeraldbrand px-5 py-3.5 text-white font-bold text-sm hover:bg-emeraldbrand-dark transition">Pay securely</button>
@@ -2657,70 +2656,17 @@
           // clipping additional buttons after the first row.
           layout: { maxColumns: 2, maxRows: 2, overflow: 'auto' }
         });
-        // If Stripe doesn't emit a wallet lifecycle event (for example, when
-        // a browser privacy/captcha layer blocks wallet capability checks), don't
-        // leave a permanent "Checking..." message in the checkout UI.
-        let walletAvailabilityReported = false;
-        const walletAvailabilityTimeout = window.setTimeout(() => {
-          if (walletAvailabilityReported) return;
-          const diagnostic = document.getElementById('express-checkout-diagnostic');
-          if (diagnostic) {
-            diagnostic.textContent = 'Stripe did not report Express Checkout availability in this browser. Check the methods below or try a supported browser/device.';
-            diagnostic.dataset.applePay = 'unknown';
-            diagnostic.dataset.googlePay = 'unknown';
-            diagnostic.dataset.link = 'unknown';
-            diagnostic.dataset.amazonPay = 'unknown';
-          }
-        }, 8000);
-
-        // Report the wallet methods Stripe actually makes available in this browser.
-        // Register lifecycle events before mounting so the initial ready event
-        // cannot be missed. Stripe reports wallet eligibility in ready.
+        // Keep availability and load diagnostics in the developer console only.
+        // Customers should never see an internal capability-checking message.
         expressCheckout.on('ready', (event) => {
-          walletAvailabilityReported = true;
-          window.clearTimeout(walletAvailabilityTimeout);
-          const methods = event?.availablePaymentMethods || {};
-          const apple = !!methods.applePay;
-          const google = !!methods.googlePay;
-          const link = !!methods.link;
-          const amazon = !!methods.amazonPay;
-          const diagnostic = document.getElementById('express-checkout-diagnostic');
-          if (diagnostic) {
-            diagnostic.textContent = `Apple Pay: ${apple ? 'available' : 'not available'} · Google Pay: ${google ? 'available' : 'not available'} · Link: ${link ? 'available' : 'not available'} · Amazon Pay: ${amazon ? 'available' : 'not available'}`;
-            diagnostic.dataset.applePay = apple ? 'available' : 'unavailable';
-            diagnostic.dataset.googlePay = google ? 'available' : 'unavailable';
-            diagnostic.dataset.link = link ? 'available' : 'unavailable';
-            diagnostic.dataset.amazonPay = amazon ? 'available' : 'unavailable';
-          }
-          console.info('[Stripe Express Checkout] Ready; wallet availability:', methods);
+          console.info('[Stripe Express Checkout] Ready; available methods:', event?.availablePaymentMethods);
         });
         expressCheckout.on('loaderror', (event) => {
-          walletAvailabilityReported = true;
-          window.clearTimeout(walletAvailabilityTimeout);
           console.error('[Stripe Express Checkout] Load error:', event?.error || event);
-          const diagnostic = document.getElementById('express-checkout-diagnostic');
-          if (diagnostic) diagnostic.textContent = 'Wallet buttons could not load: ' + (event?.error?.message || 'Stripe load error');
         });
-        // Subscribe before mount so the initial availability event is not missed.
         expressCheckout.on('availablepaymentmethodschange', (event) => {
-          walletAvailabilityReported = true;
-          window.clearTimeout(walletAvailabilityTimeout);
-          const methods = event?.paymentMethods || {};
-          const apple = !!methods.applePay?.available;
-          const google = !!methods.googlePay?.available;
-          const link = !!methods.link?.available;
-          const amazon = !!methods.amazonPay?.available;
-          const diagnostic = document.getElementById('express-checkout-diagnostic');
-          if (diagnostic) {
-            diagnostic.textContent = `Apple Pay: ${apple ? 'available' : 'not available'} · Google Pay: ${google ? 'available' : 'not available'} · Link: ${link ? 'available' : 'not available'} · Amazon Pay: ${amazon ? 'available' : 'not available'}`;
-            diagnostic.dataset.applePay = apple ? 'available' : 'unavailable';
-            diagnostic.dataset.googlePay = google ? 'available' : 'unavailable';
-            diagnostic.dataset.link = link ? 'available' : 'unavailable';
-            diagnostic.dataset.amazonPay = amazon ? 'available' : 'unavailable';
-          }
-          console.info('[Stripe Express Checkout] Available payment methods changed:', methods);
+          console.info('[Stripe Express Checkout] Available payment methods changed:', event?.paymentMethods);
         });
-
         expressCheckout.mount('#express-checkout-element');
 
         const paymentElement = checkout.createPaymentElement();
