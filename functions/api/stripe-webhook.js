@@ -1,3 +1,5 @@
+import { upsertCustomer } from '../_lib/customers.js';
+
 const encoder=new TextEncoder();
 const toHex=buffer=>[...new Uint8Array(buffer)].map(b=>b.toString(16).padStart(2,'0')).join('');
 function constantTimeEqual(a,b){if(a.length!==b.length)return false;let diff=0;for(let i=0;i<a.length;i++)diff|=a.charCodeAt(i)^b.charCodeAt(i);return diff===0;}
@@ -19,20 +21,28 @@ export async function onRequestPost({request,env}){
   try{
     const already=await env.BOOKINGS_DB.prepare('SELECT id FROM stripe_events WHERE id=?').bind(event.id).first();
     if(already)return Response.json({received:true,duplicate:true});
-    const session=event.data?.object, id=session?.metadata?.booking_id, now=new Date().toISOString();
-    if(id){
-      if(event.type==='checkout.session.completed'||event.type==='checkout.session.async_payment_succeeded'){
-        if(session.payment_status==='paid'){
-          const result=await env.BOOKINGS_DB.prepare("UPDATE bookings SET payment_status='paid',stripe_session_id=?,updated_at=? WHERE id=? AND total_cents=? AND currency='eur' AND payment_method='stripe'")
-            .bind(session.id,now,id,session.amount_total).run();
-          if(result.meta?.changes!==1){console.error('Paid Stripe session did not match a pending booking',{eventId:event.id,sessionId:session.id,bookingId:id});return new Response('Booking or amount mismatch',{status:500});}
-        }
-      } else if(event.type==='checkout.session.async_payment_failed'){
-        await env.BOOKINGS_DB.prepare("UPDATE bookings SET payment_status='payment_failed',updated_at=? WHERE id=? AND payment_method='stripe' AND payment_status='pending_payment'").bind(now,id).run();
-      } else if(event.type==='checkout.session.expired'){
-        await env.BOOKINGS_DB.prepare("UPDATE bookings SET payment_status='expired',updated_at=? WHERE id=? AND payment_method='stripe' AND payment_status='pending_payment'").bind(now,id).run();
+    const session=event.data?.object, meta=session?.metadata||{}, id=meta.booking_id, now=new Date().toISOString();
+    if(id&&(event.type==='checkout.session.completed'||event.type==='checkout.session.async_payment_succeeded')&&session.payment_status==='paid'){
+      const customer={
+        name:meta.customer_name||'',
+        email:meta.customer_email||session.customer_details?.email||session.customer_email||'',
+        phone:meta.customer_phone||session.customer_details?.phone||'',
+        address:meta.customer_address||'',
+        town:meta.customer_town||'',
+        notes:meta.customer_notes||''
+      };
+      if(!customer.email) return new Response('Paid session is missing customer email',{status:500});
+      const saved=await env.BOOKINGS_DB.prepare(`INSERT INTO bookings
+        (id,service,description,booking_date,booking_time,customer_name,customer_email,customer_phone,customer_address,customer_town,customer_notes,total_cents,currency,payment_method,payment_status,stripe_session_id,booking_json,created_at,updated_at)
+        VALUES(?,?,?,?,?,?,?,?,?,?,?,?, 'eur','stripe','paid',?,?,?,?)
+        ON CONFLICT(id) DO NOTHING`)
+        .bind(id,meta.service||'Online booking',meta.description||'',meta.booking_date||'',meta.booking_time||'',customer.name,customer.email,customer.phone,customer.address,customer.town,customer.notes,session.amount_total,session.id,JSON.stringify({date:meta.booking_date||'',timeSlot:meta.booking_time||'',service:meta.service||'',description:meta.description||'',client:customer}),now,now).run();
+      if(saved.meta?.changes===1){
+        await upsertCustomer(env.BOOKINGS_DB,customer,now);
+        await env.BOOKINGS_DB.prepare('UPDATE bookings SET customer_id=? WHERE id=?').bind(customer.email.trim().toLowerCase(),id).run();
       }
     }
+    // Failed or expired checkout sessions never create customer or booking rows.
     await env.BOOKINGS_DB.prepare('INSERT INTO stripe_events(id,event_type,created_at) VALUES(?,?,?) ON CONFLICT(id) DO NOTHING').bind(event.id,event.type,now).run();
     return Response.json({received:true});
   }catch(error){console.error('Stripe webhook processing failed',error);return new Response('Webhook processing failed',{status:500});}
