@@ -66,13 +66,18 @@ export async function onRequestPost({ request, env }) {
     const params = new URLSearchParams();
     params.set('mode', 'payment');
     params.set('ui_mode', 'form');
+    params.set('billing_address_collection', 'auto');
+params.set('automatic_tax[enabled]', 'false');
+params.set('submit_type', 'auto');
+params.set('saved_payment_method_options[payment_method_save]', 'enabled');
+params.set('integration_identifier', 'custom_embedded_web_0002');
     params.set('return_url', `${origin}/?payment=complete&session_id={CHECKOUT_SESSION_ID}`);
     params.set('line_items[0][quantity]', '1');
     params.set('line_items[0][price_data][currency]', 'eur');
     params.set('line_items[0][price_data][unit_amount]', String(quote.amount));
     params.set('line_items[0][price_data][product_data][name]', quote.title);
     params.set('line_items[0][price_data][product_data][description]', quote.description.slice(0, 300));
-    params.set('phone_number_collection[enabled]', 'true');
+    params.set('phone_number_collection[enabled]', 'false');
     params.set('metadata[customer_name]', String(customer.name).slice(0, 500));
     params.set('metadata[customer_phone]', String(customer.phone).slice(0, 500));
     params.set('metadata[customer_address]', String(customer.address).slice(0, 500));
@@ -84,7 +89,11 @@ export async function onRequestPost({ request, env }) {
 
     const stripeResponse = await fetch('https://api.stripe.com/v1/checkout/sessions', {
       method: 'POST',
-      headers: { 'Authorization': `Bearer ${env.STRIPE_SECRET_KEY}`, 'Content-Type': 'application/x-www-form-urlencoded' },
+      headers: {
+  'Authorization': `Bearer ${env.STRIPE_SECRET_KEY}`,
+  'Content-Type': 'application/x-www-form-urlencoded',
+  'Stripe-Version': '2026-03-25.dahlia'
+},
       body: params
     });
     const session = await stripeResponse.json();
