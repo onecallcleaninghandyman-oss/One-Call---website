@@ -2665,9 +2665,11 @@
           if (walletAvailabilityReported) return;
           const diagnostic = document.getElementById('express-checkout-diagnostic');
           if (diagnostic) {
-            diagnostic.textContent = 'Apple Pay / Google Pay availability could not be confirmed here. Other payment methods are available below.';
+            diagnostic.textContent = 'Stripe did not report Express Checkout availability in this browser. Check the methods below or try a supported browser/device.';
             diagnostic.dataset.applePay = 'unknown';
             diagnostic.dataset.googlePay = 'unknown';
+            diagnostic.dataset.link = 'unknown';
+            diagnostic.dataset.amazonPay = 'unknown';
           }
         }, 8000);
 
@@ -2680,11 +2682,15 @@
           const methods = event?.availablePaymentMethods || {};
           const apple = !!methods.applePay;
           const google = !!methods.googlePay;
+          const link = !!methods.link;
+          const amazon = !!methods.amazonPay;
           const diagnostic = document.getElementById('express-checkout-diagnostic');
           if (diagnostic) {
-            diagnostic.textContent = `Apple Pay: ${apple ? 'available' : 'not available'} · Google Pay: ${google ? 'available' : 'not available'}`;
+            diagnostic.textContent = `Apple Pay: ${apple ? 'available' : 'not available'} · Google Pay: ${google ? 'available' : 'not available'} · Link: ${link ? 'available' : 'not available'} · Amazon Pay: ${amazon ? 'available' : 'not available'}`;
             diagnostic.dataset.applePay = apple ? 'available' : 'unavailable';
             diagnostic.dataset.googlePay = google ? 'available' : 'unavailable';
+            diagnostic.dataset.link = link ? 'available' : 'unavailable';
+            diagnostic.dataset.amazonPay = amazon ? 'available' : 'unavailable';
           }
           console.info('[Stripe Express Checkout] Ready; wallet availability:', methods);
         });
