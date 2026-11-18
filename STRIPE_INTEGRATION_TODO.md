@@ -22,13 +22,11 @@ Before accepting live payments, verify the Cloudflare Pages environment variable
 | `ui_mode` | `form` |
 | `mode` | `payment` |
 | `billing_address_collection` | `auto` |
-| `phone_number_collection[enabled]` | `false` |
-| `automatic_tax[enabled]` | `false` |
-| `submit_type` | `pay` |
+| | | `submit_type` | `pay` |
 | `saved_payment_method_options[payment_method_save]` | `enabled` |
 | `integration_identifier` | `custom_embedded_web_0002` |
 | `line_items` | One dynamically priced EUR line item, quantity 1 |
-| Stripe API version | `2026-03-25.dahlia` |
+| Stripe API version | `2026-10-28.endive` |
 | Stripe.js | `https://js.stripe.com/dahlia/stripe.js` |
 | Embedded form theme | `flat` |
 | Labels / inputs | `auto` / `spaced` |
