@@ -10,17 +10,8 @@ export async function onRequestPost({request,env}) {
     const {customer,quote}=validateBooking(booking);
     bookingId=String(body.bookingId||'');
     if(!bookingIdIsValid(bookingId)) return json({error:'Booking request expired. Please click Pay Online again.'},400);
+    // Do not persist customer or booking details before Stripe confirms payment.
     const now=new Date().toISOString();
-    const bookingJson=JSON.stringify({...booking,client:customer});
-    const saved=await env.BOOKINGS_DB.prepare(`INSERT INTO bookings
-      (id,service,description,booking_date,booking_time,customer_name,customer_email,customer_phone,customer_address,customer_town,customer_notes,total_cents,currency,payment_method,payment_status,booking_json,created_at,updated_at)
-      VALUES(?,?,?,?,?,?,?,?,?,?,?,?, 'eur','stripe','pending_payment',?,?,?)
-      ON CONFLICT(id) DO NOTHING`)
-      .bind(bookingId,quote.title,quote.description,booking.date,booking.timeSlot,customer.name,customer.email,customer.phone,customer.address,customer.town,customer.notes,quote.amount,bookingJson,now,now).run();
-    if(saved.meta?.changes===1) {
-      await upsertCustomer(env.BOOKINGS_DB,customer,now);
-      await env.BOOKINGS_DB.prepare('UPDATE bookings SET customer_id=? WHERE id=?').bind(customer.email.trim().toLowerCase(),bookingId).run();
-    }
 
     const origin=new URL(request.url).origin, params=new URLSearchParams();
     params.set('mode','payment');
@@ -40,7 +31,10 @@ export async function onRequestPost({request,env}) {
     params.set('metadata[service]',quote.title);
     params.set('metadata[description]',quote.description.slice(0,500));
     params.set('metadata[customer_name]',customer.name.slice(0,200));
+    params.set('metadata[customer_email]',customer.email.slice(0,200));
     params.set('metadata[customer_phone]',customer.phone.slice(0,200));
+    params.set('metadata[customer_address]',customer.address.slice(0,200));
+    params.set('metadata[customer_notes]',(customer.notes||'').slice(0,450));
     params.set('metadata[customer_town]',customer.town.slice(0,200));
     params.set('payment_intent_data[metadata][booking_id]',bookingId);
 
@@ -55,7 +49,6 @@ export async function onRequestPost({request,env}) {
       await env.BOOKINGS_DB.prepare("UPDATE bookings SET payment_status='payment_setup_failed',updated_at=? WHERE id=? AND payment_status='pending_payment'").bind(new Date().toISOString(),bookingId).run();
       return json({error:session.error?.message||'Stripe could not create the payment session.'},502);
     }
-    await env.BOOKINGS_DB.prepare('UPDATE bookings SET stripe_session_id=?,updated_at=? WHERE id=?').bind(session.id,new Date().toISOString(),bookingId).run();
     if(!session.client_secret) return json({error:'Stripe did not return a Checkout client secret. Check the Stripe account and API configuration.'},502);
     return json({client_secret:session.client_secret,bookingId});
   } catch(error) {
