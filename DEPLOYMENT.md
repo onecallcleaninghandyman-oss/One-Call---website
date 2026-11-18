@@ -9,7 +9,7 @@
    - `STRIPE_PUBLISHABLE_KEY` — Stripe publishable key.
    - `STRIPE_SECRET_KEY` — matching Stripe secret key; keep server-side.
    - `STRIPE_WEBHOOK_SECRET` — signing secret for the webhook endpoint.
-5. In Stripe Dashboard, add endpoint `https://YOUR-DOMAIN/api/stripe-webhook` and subscribe to `checkout.session.completed`, `checkout.session.async_payment_succeeded`, and `checkout.session.expired`.
+5. In Stripe Dashboard, add endpoint `https://YOUR-DOMAIN/api/stripe-webhook` and subscribe to `checkout.session.completed`, `checkout.session.async_payment_succeeded`, `checkout.session.async_payment_failed`, and `checkout.session.expired`.
 6. Deploy the GitHub changes. Verify `/api/config` returns only the publishable key.
 7. Test in Stripe test mode: paid card booking becomes `paid` in D1; cash booking becomes `cash_due`. Switch to live keys only after successful tests.
 
