@@ -2609,7 +2609,7 @@
       if (!data.publishableKey || data.publishableKey.includes('...')) {
         throw new Error('Stripe API keys are still placeholders. Update STRIPE_PUBLISHABLE_KEY and STRIPE_SECRET_KEY in .env and line_items[].price in server.js (see STRIPE_INTEGRATION_TODO.md).');
       }
-      stripeInstance = Stripe(data.publishableKey);
+      stripeInstance = Stripe(data.publishableKey, { betas: ['custom_checkout_payment_form_1'] });
       return stripeInstance;
     }
 
