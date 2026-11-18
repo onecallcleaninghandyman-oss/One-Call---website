@@ -2654,22 +2654,28 @@
           layout: { maxColumns: 2, maxRows: 1, overflow: 'never' }
         });
         // Report the wallet methods Stripe actually makes available in this browser.
+        // Register lifecycle events before mounting so the initial ready event
+        // cannot be missed. Stripe reports wallet eligibility in ready.
         expressCheckout.on('ready', (event) => {
           const methods = event?.availablePaymentMethods || {};
-          const apple = methods.applePay ? 'available' : 'not available';
-          const google = methods.googlePay ? 'available' : 'not available';
+          const apple = !!methods.applePay;
+          const google = !!methods.googlePay;
           const diagnostic = document.getElementById('express-checkout-diagnostic');
           if (diagnostic) {
-            diagnostic.textContent = `Apple Pay: ${apple} · Google Pay: ${google}`;
-            diagnostic.dataset.applePay = methods.applePay ? 'available' : 'unavailable';
-            diagnostic.dataset.googlePay = methods.googlePay ? 'available' : 'unavailable';
+            diagnostic.textContent = `Apple Pay: ${apple ? 'available' : 'not available'} · Google Pay: ${google ? 'available' : 'not available'}`;
+            diagnostic.dataset.applePay = apple ? 'available' : 'unavailable';
+            diagnostic.dataset.googlePay = google ? 'available' : 'unavailable';
           }
-          console.info('[Stripe Express Checkout] Wallet availability:', {
-            applePay: !!methods.applePay,
-            googlePay: !!methods.googlePay,
-            availablePaymentMethods: methods
-          });
+          console.info('[Stripe Express Checkout] Ready; wallet availability:', methods);
         });
+        expressCheckout.on('loaderror', (event) => {
+          console.error('[Stripe Express Checkout] Load error:', event?.error || event);
+          const diagnostic = document.getElementById('express-checkout-diagnostic');
+          if (diagnostic) diagnostic.textContent = 'Wallet buttons could not load: ' + (event?.error?.message || 'Stripe load error');
+        });
+        expressCheckout.mount('#express-checkout-element');
+
+        // Stripe emits this event after mounting as the available methods resolve.
         expressCheckout.on('availablepaymentmethodschange', (event) => {
           const methods = event?.paymentMethods || {};
           const apple = !!methods.applePay?.available;
@@ -2682,12 +2688,6 @@
           }
           console.info('[Stripe Express Checkout] Available payment methods changed:', methods);
         });
-        expressCheckout.on('loaderror', (event) => {
-          console.error('[Stripe Express Checkout] Load error:', event?.error || event);
-          const diagnostic = document.getElementById('express-checkout-diagnostic');
-          if (diagnostic) diagnostic.textContent = 'Wallet buttons could not load: ' + (event?.error?.message || 'Stripe load error');
-        });
-        expressCheckout.mount('#express-checkout-element');
 
         const paymentElement = checkout.createPaymentElement();
         paymentElement.mount('#payment-element');
