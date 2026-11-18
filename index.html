@@ -2685,7 +2685,21 @@
         const checkout = stripe.initCheckoutFormSdk({ clientSecret, appearance });
         container.innerHTML = '';
 
-        const form = checkout.createForm({ layout: 'expanded' });
+        const form = checkout.createForm({
+          layout: 'expanded',
+          expressCheckout: {
+            buttonHeight: 44,
+            buttonTheme: { applePay: 'black', googlePay: 'black' },
+            paymentMethods: {
+              applePay: 'always',
+              googlePay: 'always',
+              link: 'never',
+              klarna: 'never',
+              paypal: 'never',
+              amazonPay: 'never'
+            }
+          }
+        });
         form.mount('#checkout-form');
         activeStripeForm = form;
 
