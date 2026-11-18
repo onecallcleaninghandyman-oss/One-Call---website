@@ -766,7 +766,7 @@
         <!-- RIGHT COLUMN: STICKY LIVE SUMMARY SIDEBAR -->
         <aside class="lg:col-span-4 lg:sticky lg:top-24">
           <div class="bg-white rounded-3xl border border-slate-200 shadow-sticky overflow-hidden">
-            <div class="bg-navy px-6 py-4 text-white flex items-center justify-between">
+            <div class="bg-navy px-5 py-3 text-white flex items-center justify-between shrink-0 sticky top-0 z-10">
               <div>
                 <span class="text-[11px] font-bold uppercase tracking-widest text-emerald-300">Booking Summary</span>
                 <h3 class="font-display font-bold text-lg">Your Instant Quote</h3>
@@ -1668,17 +1668,17 @@
   <!-- =========================================================
        STRIPE CHECKOUT MODAL (PURE STRIPE EMBEDDED FORM)
   ========================================================== -->
-  <div id="payment-modal" class="hidden fixed inset-0 z-50 bg-navy/70 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
-    <div class="bg-white rounded-3xl max-w-lg w-full shadow-2xl overflow-hidden wizard-fade my-4">
+  <div id="payment-modal" onclick="if (event.target === this) closePaymentModal()" class="hidden fixed inset-0 z-50 bg-navy/70 backdrop-blur-sm flex items-center justify-center p-3 overflow-y-auto">
+    <div onclick="event.stopPropagation()" class="bg-white rounded-3xl max-w-lg w-full max-h-[92vh] shadow-2xl overflow-hidden wizard-fade my-auto flex flex-col">
       <div class="bg-navy px-6 py-4 text-white flex items-center justify-between">
         <div>
           <span class="text-[11px] font-bold uppercase tracking-widest text-emerald-300">Powered by Stripe</span>
           <h3 class="font-display font-bold text-lg">Secure Stripe Checkout</h3>
         </div>
-        <button type="button" onclick="closePaymentModal()" class="text-white/70 hover:text-white text-2xl leading-none cursor-pointer">&times;</button>
+        <button type="button" aria-label="Close payment window" title="Close" onclick="closePaymentModal()" class="ml-4 shrink-0 w-10 h-10 flex items-center justify-center rounded-full text-white hover:bg-white/15 text-3xl leading-none cursor-pointer">&times;</button>
       </div>
 
-      <div id="payment-form-view" class="p-6 space-y-5">
+      <div id="payment-form-view" class="p-4 sm:p-5 space-y-4 overflow-y-auto overscroll-contain">
         <div class="bg-slate-50 rounded-2xl p-4 border border-slate-200 flex items-center justify-between gap-3">
           <div>
             <span class="text-xs font-bold text-navy block" id="modal-summary-line">Regular Cleaning • 3 Rooms, 1 Bathroom</span>
@@ -1697,7 +1697,7 @@
         <div id="modal-validation-msg" class="hidden text-xs font-bold text-red-700 bg-red-50 border border-red-200 rounded-xl px-3.5 py-2.5 leading-relaxed"></div>
       </div>
 
-      <div id="payment-success-view" class="hidden p-8 text-center space-y-4">
+      <div id="payment-success-view" class="hidden p-6 text-center space-y-4 overflow-y-auto overscroll-contain">
         <div class="w-16 h-16 rounded-full bg-emeraldbrand-tint text-emeraldbrand mx-auto flex items-center justify-center">
           <svg class="w-9 h-9" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
         </div>
@@ -2761,6 +2761,13 @@
       cleanupStripeForm();
       document.getElementById('payment-modal').classList.add('hidden');
     }
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape') {
+        const modal = document.getElementById('payment-modal');
+        if (modal && !modal.classList.contains('hidden')) closePaymentModal();
+      }
+    });
 
     function bookCashToCleaner() {
       syncClientDetails();
