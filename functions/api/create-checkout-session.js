@@ -66,11 +66,6 @@ export async function onRequestPost({ request, env }) {
     const params = new URLSearchParams();
     params.set('mode', 'payment');
     params.set('ui_mode', 'form');
-    // Keep Checkout dynamic, but allow only the payment methods selected for this site.
-    // Apple Pay and Google Pay are presented through the card wallet options.
-    for (const method of ['card', 'amazon_pay', 'link', 'klarna', 'revolut_pay']) {
-      params.append('allowed_payment_method_types[]', method);
-    }
     params.set('billing_address_collection', 'auto');
 params.set('automatic_tax[enabled]', 'false');
 params.set('submit_type', 'pay');
