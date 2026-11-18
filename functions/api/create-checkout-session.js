@@ -1,4 +1,5 @@
 import { validateBooking, json, bookingIdIsValid } from '../_lib/booking.js';
+import { upsertCustomer } from '../_lib/customers.js';
 
 export async function onRequestPost({request,env}) {
   let bookingId='';
@@ -11,11 +12,15 @@ export async function onRequestPost({request,env}) {
     if(!bookingIdIsValid(bookingId)) return json({error:'Booking request expired. Please click Pay Online again.'},400);
     const now=new Date().toISOString();
     const bookingJson=JSON.stringify({...booking,client:customer});
-    await env.BOOKINGS_DB.prepare(`INSERT INTO bookings
+    const saved=await env.BOOKINGS_DB.prepare(`INSERT INTO bookings
       (id,service,description,booking_date,booking_time,customer_name,customer_email,customer_phone,customer_address,customer_town,customer_notes,total_cents,currency,payment_method,payment_status,booking_json,created_at,updated_at)
       VALUES(?,?,?,?,?,?,?,?,?,?,?,?, 'eur','stripe','pending_payment',?,?,?)
       ON CONFLICT(id) DO NOTHING`)
       .bind(bookingId,quote.title,quote.description,booking.date,booking.timeSlot,customer.name,customer.email,customer.phone,customer.address,customer.town,customer.notes,quote.amount,bookingJson,now,now).run();
+    if(saved.meta?.changes===1) {
+      await upsertCustomer(env.BOOKINGS_DB,customer,now);
+      await env.BOOKINGS_DB.prepare('UPDATE bookings SET customer_id=? WHERE id=?').bind(customer.email.trim().toLowerCase(),bookingId).run();
+    }
 
     const origin=new URL(request.url).origin, params=new URLSearchParams();
     params.set('mode','payment');
