@@ -20,8 +20,6 @@ export async function onRequestPost({request,env}) {
     const origin=new URL(request.url).origin, params=new URLSearchParams();
     params.set('mode','payment');
     params.set('ui_mode','elements');
-    // Explicitly enable card payments; Stripe uses card for Apple Pay and Google Pay in Express Checkout.
-    params.append('payment_method_types[]','card');
     params.set('locale','en');
     params.set('integration_identifier','custom_embedded_web_0002');
     params.set('return_url',`${origin}/?payment=complete&session_id={CHECKOUT_SESSION_ID}&booking_id=${bookingId}`);
