@@ -56,8 +56,11 @@ export async function onRequestPost({ request, env }) {
     const body = await request.json();
     const booking = body.booking || {};
     const customer = booking.client || {};
-    if (!String(customer.name || '').trim() || !String(customer.phone || '').trim() || !String(customer.address || '').trim()) {
-      return json({ error: 'Please enter your name, phone number and address.' }, 400);
+    if (!String(customer.name || '').trim() || !String(customer.phone || '').trim() || !String(customer.email || '').trim() || !String(customer.address || '').trim()) {
+      return json({ error: 'Please enter your name, phone number, email address and address.' }, 400);
+    }
+    if (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(String(customer.email).trim())) {
+      return json({ error: 'Please enter a valid email address.' }, 400);
     }
     const quote = calculateBooking(booking);
     if (!Number.isInteger(quote.amount) || quote.amount < 100 || quote.amount > 10000000) return json({ error: 'Invalid booking amount.' }, 400);
@@ -68,6 +71,7 @@ export async function onRequestPost({ request, env }) {
     params.set('ui_mode', 'elements');
     params.set('locale', 'en');
     params.set('integration_identifier', 'custom_embedded_web_0002');
+    params.set('customer_email', String(customer.email).trim().slice(0, 500));
     params.set('return_url', `${origin}/?payment=complete&session_id={CHECKOUT_SESSION_ID}`);
     params.set('line_items[0][quantity]', '1');
     params.set('line_items[0][price_data][currency]', 'eur');
@@ -75,6 +79,7 @@ export async function onRequestPost({ request, env }) {
     params.set('line_items[0][price_data][product_data][name]', quote.title);
     params.set('line_items[0][price_data][product_data][description]', quote.description.slice(0, 300));
     params.set('metadata[customer_name]', String(customer.name).slice(0, 500));
+    params.set('metadata[customer_email]', String(customer.email).trim().slice(0, 500));
     params.set('metadata[customer_phone]', String(customer.phone).slice(0, 500));
     params.set('metadata[customer_address]', String(customer.address).slice(0, 500));
     params.set('metadata[customer_town]', String(customer.town || '').slice(0, 200));
