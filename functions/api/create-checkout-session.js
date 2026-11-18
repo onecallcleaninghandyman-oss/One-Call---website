@@ -65,7 +65,7 @@ export async function onRequestPost({ request, env }) {
     const origin = new URL(request.url).origin;
     const params = new URLSearchParams();
     params.set('mode', 'payment');
-    params.set('ui_mode', 'elements');
+    params.set('ui_mode', 'custom');
     params.set('locale', 'en');
     params.set('integration_identifier', 'custom_embedded_web_0002');
     params.set('return_url', `${origin}/?payment=complete&session_id={CHECKOUT_SESSION_ID}`);
