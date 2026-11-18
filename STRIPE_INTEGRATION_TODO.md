@@ -20,7 +20,6 @@ No sample placeholders remain in the existing Checkout Session creation call:
 | phone_number_collection[enabled] | false |
 | automatic_tax[enabled] | false |
 | submit_type | pay |
-| saved_payment_method_options[payment_method_save] | enabled |
 | integration_identifier | custom_embedded_web_0002 |
 | line_items | One dynamically priced EUR line item, quantity 1 |
 | Stripe.js | https://js.stripe.com/dahlia/stripe.js |
@@ -33,7 +32,7 @@ The existing server-side booking price calculation, customer/booking metadata, r
 1. In Cloudflare Pages, confirm that `STRIPE_SECRET_KEY` and `STRIPE_PUBLISHABLE_KEY` are configured as environment variables for the correct environment (Preview and Production as applicable). Keep the secret key server-side only.
 2. Confirm that the publishable key returned by the existing `/api/config` endpoint belongs to the same Stripe account and mode as the secret key.
 3. Test the booking flow in Stripe test mode first. Verify the displayed amount, booking details, payment confirmation, and return URL. Use Stripe's documented test card `4242 4242 4242 4242`, a future expiry date, and any three-digit CVC.
-4. The Checkout Studio configuration enables saving a payment method. If you do not want customers to be offered the ability to save payment details, change `saved_payment_method_options[payment_method_save]` in Checkout Studio and remove/disable the corresponding server parameter.
+4. Saving payment methods is disabled in the server request. Do not enable `saved_payment_method_options` unless a Stripe Customer is attached to the Checkout Session.
 5. Configure a Stripe webhook endpoint before relying on automatic booking fulfilment. At minimum, handle `checkout.session.completed`; verify the webhook signature and check `payment_status` before marking a booking as paid. Handle delayed payment success events if you later enable payment methods that can complete asynchronously.
 6. Confirm that a successful payment is recorded against a durable booking record. The current browser success screen is not a substitute for a verified webhook or server-side payment record.
 7. After successful test payments, deploy the changes to Cloudflare Pages and perform a small live payment test before accepting customer payments.
