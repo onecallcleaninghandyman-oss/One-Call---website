@@ -14,6 +14,7 @@ async function verifyStripeSignature(payload,header,secret){
 }
 export async function onRequestPost({request,env}){
   if(!env.STRIPE_WEBHOOK_SECRET)return new Response('Webhook is not configured',{status:503});
+  if(!env.STRIPE_SECRET_KEY)return new Response('Stripe is not configured',{status:503});
   if(!env.BOOKINGS_DB)return new Response('Booking database is not configured',{status:503});
   const payload=await request.text();
   if(!(await verifyStripeSignature(payload,request.headers.get('Stripe-Signature'),env.STRIPE_WEBHOOK_SECRET)))return new Response('Invalid signature',{status:400});
@@ -23,15 +24,33 @@ export async function onRequestPost({request,env}){
     if(already)return Response.json({received:true,duplicate:true});
     const session=event.data?.object, meta=session?.metadata||{}, id=meta.booking_id, now=new Date().toISOString();
     if(id&&(event.type==='checkout.session.completed'||event.type==='checkout.session.async_payment_succeeded')&&session.payment_status==='paid'){
+      const stripeCustomerId=typeof session.customer==='string'?session.customer:session.customer?.id||'';
+      if(!stripeCustomerId)return new Response('Paid session is missing Stripe Customer ID',{status:500});
       const customer={
-        name:meta.customer_name||'',
+        name:meta.customer_name||session.customer_details?.name||'',
         email:meta.customer_email||session.customer_details?.email||session.customer_email||'',
         phone:meta.customer_phone||session.customer_details?.phone||'',
         address:meta.customer_address||'',
         town:meta.customer_town||'',
-        notes:meta.customer_notes||''
+        notes:meta.customer_notes||'',
+        stripeCustomerId
       };
-      if(!customer.email) return new Response('Paid session is missing customer email',{status:500});
+      if(!customer.email)return new Response('Paid session is missing customer email',{status:500});
+
+      // Enrich the Stripe Customer only after payment is confirmed.
+      const customerParams=new URLSearchParams();
+      if(customer.name)customerParams.set('name',customer.name.slice(0,200));
+      if(customer.phone)customerParams.set('phone',customer.phone.slice(0,100));
+      if(customer.address)customerParams.set('address[line1]',customer.address.slice(0,200));
+      if(customer.town)customerParams.set('address[city]',customer.town.slice(0,100));
+      customerParams.set('metadata[website_customer_email]',customer.email.slice(0,200));
+      const stripeUpdate=await fetch(`https://api.stripe.com/v1/customers/${encodeURIComponent(stripeCustomerId)}`,{
+        method:'POST',
+        headers:{Authorization:`Bearer ${env.STRIPE_SECRET_KEY}`,'Content-Type':'application/x-www-form-urlencoded','Stripe-Version':'2026-10-28.endive'},
+        body:customerParams
+      });
+      if(!stripeUpdate.ok){const detail=await stripeUpdate.json();console.error('Stripe Customer update failed',detail);return new Response('Unable to update Stripe Customer',{status:502});}
+
       const saved=await env.BOOKINGS_DB.prepare(`INSERT INTO bookings
         (id,service,description,booking_date,booking_time,customer_name,customer_email,customer_phone,customer_address,customer_town,customer_notes,total_cents,currency,payment_method,payment_status,stripe_session_id,booking_json,created_at,updated_at)
         VALUES(?,?,?,?,?,?,?,?,?,?,?,?, 'eur','stripe','paid',?,?,?,?)
