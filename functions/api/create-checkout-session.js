@@ -65,7 +65,7 @@ export async function onRequestPost({ request, env }) {
     const origin = new URL(request.url).origin;
     const params = new URLSearchParams();
     params.set('mode', 'payment');
-    params.set('ui_mode', 'elements');
+    params.set('ui_mode', 'form');
     params.set('return_url', `${origin}/?payment=complete&session_id={CHECKOUT_SESSION_ID}`);
     params.set('line_items[0][quantity]', '1');
     params.set('line_items[0][price_data][currency]', 'eur');
