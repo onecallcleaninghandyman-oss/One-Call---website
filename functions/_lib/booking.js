@@ -78,7 +78,8 @@ export function validateBooking(booking) {
   if(Number.isNaN(d.getTime()) || d.toISOString().slice(0,10)!==b.date) throw new Error('Please select a valid booking date.');
   const today=new Date().toLocaleDateString('en-CA',{timeZone:'Europe/Dublin'});
   if(b.date<today) throw new Error('Please select a future booking date.');
-  if(!String(b.timeSlot||'').trim() || String(b.timeSlot).length>100) throw new Error('Please select an arrival time.');
+  const allowedSlots=['Morning (08:30 – 12:00)','Afternoon (12:30 – 16:00)','Evening (16:30 – 20:00)'];
+  if(!allowedSlots.includes(String(b.timeSlot||''))) throw new Error('Please select a valid arrival time.');
   if(!String(c.town||'').trim() || String(c.town).length>80) throw new Error('Please select your town or area.');
   const quote=calculateBooking(b);
   if(!Number.isInteger(quote.amount)||quote.amount<100||quote.amount>10000000) throw new Error('Invalid booking amount.');
