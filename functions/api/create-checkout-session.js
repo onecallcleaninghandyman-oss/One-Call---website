@@ -33,6 +33,8 @@ export async function onRequestPost({request,env}) {
     params.set('metadata[customer_notes]',(customer.notes||'').slice(0,450));
     params.set('metadata[customer_town]',customer.town.slice(0,200));
     params.set('payment_intent_data[metadata][booking_id]',bookingId);
+    // Request Stripe's automatic receipt at the booking email address.
+    params.set('payment_intent_data[receipt_email]',customer.email);
 
     // Reuse an existing Stripe Customer by email. Otherwise Stripe creates one only when Checkout completes.
     const lookupParams=new URLSearchParams({email:customer.email,limit:'1'});
@@ -65,6 +67,13 @@ export async function onRequestPost({request,env}) {
       return json({error:session.error?.message||'Stripe could not create the payment session.'},502);
     }
     if(!session.client_secret) return json({error:'Stripe did not return a Checkout client secret. Check the Stripe account and API configuration.'},502);
+    // Save the pending booking before the customer returns from Stripe.
+    const now=new Date().toISOString();
+    await env.BOOKINGS_DB.prepare(`INSERT INTO bookings
+      (id,service,description,booking_date,booking_time,customer_name,customer_email,customer_phone,customer_address,customer_town,customer_notes,total_cents,currency,payment_method,payment_status,stripe_session_id,booking_json,created_at,updated_at)
+      VALUES(?,?,?,?,?,?,?,?,?,?,?,?, 'eur','stripe','pending',?,?,?,?)
+      ON CONFLICT(id) DO UPDATE SET stripe_session_id=excluded.stripe_session_id,updated_at=excluded.updated_at`)
+      .bind(bookingId,quote.title,quote.description,booking.date,booking.timeSlot,customer.name,customer.email,customer.phone,customer.address,customer.town,customer.notes,quote.amount,session.id,JSON.stringify({...booking,client:customer}),now,now).run();
     return json({client_secret:session.client_secret,bookingId});
   } catch(error) {
     console.error('Checkout session error',error);
