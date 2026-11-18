@@ -247,8 +247,7 @@
 
           <!-- CleanWhale-Style 4-Step Navigation Bar -->
           <div class="bg-white rounded-2xl p-2.5 sm:p-3.5 border border-slate-200/90 shadow-card" id="wizard-step-tabs-wrap">
-            <div class="grid grid-cols-4 gap-1.5 sm:gap-2" id="wizard-step-tabs">              <button type="button" onclick="goToStep(1)" data-step-tab="1"                      class="step-tab flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 py-2.5 px-1.5 rounded-xl text-xs font-bold transition cursor-pointer">                <span class="step-num w-6 h-6 rounded-full flex items-center justify-center text-xs font-extrabold">1</span>                <span class="hidden sm:inline">Services &amp; Add-ons</span>                <span class="sm:hidden text-[10px]">Services</span>              </button>
-              <button type="button" onclick="goToStep(2)" data-step-tab="2"
+            <div class="grid grid-cols-4 gap-1.5 sm:gap-2" id="wizard-step-tabs">              <button type="button" onclick="goToStep(1)" data-step-tab="1"                      class="step-tab flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 py-2.5 px-1.5 rounded-xl text-xs font-bold transition cursor-pointer">                <span class="step-num w-6 h-6 rounded-full flex items-center justify-center text-xs font-extrabold">1</span>                <span class="hidden sm:inline">Services &amp; Add-ons</span>                <span class="sm:hidden text-[10px]">Services</span>              </button>              <button type="button" onclick="goToStep(2)" data-step-tab="2"
                       class="step-tab flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 py-2.5 px-1.5 rounded-xl text-xs font-bold transition cursor-pointer">
                 <span class="step-num w-6 h-6 rounded-full flex items-center justify-center text-xs font-extrabold">2</span>
                 <span class="hidden sm:inline">Property Size</span>
@@ -497,8 +496,7 @@
                     </div>                  </div>
                   <div class="addon-card p-3 rounded-xl border-2 bg-white transition flex flex-col justify-between gap-2" id="addon-card-ironing">
                     <div class="flex items-center justify-between gap-2">                      <label class="flex items-center gap-2 cursor-pointer">
-                        <input type="checkbox" id="addon-ironing" onchange="toggleIroningAddon()"
-                               class="w-4 h-4 rounded border-slate-300 text-emeraldbrand focus:ring-emeraldbrand cursor-pointer" />
+                        <input type="checkbox" id="addon-ironing" onchange="toggleIroningAddon()"                               class="w-4 h-4 rounded border-slate-300 text-emeraldbrand focus:ring-emeraldbrand cursor-pointer" />
                         <span class="font-display font-bold text-navy text-xs sm:text-sm">Ironing</span>
                       </label>
                       <span class="text-xs font-extrabold text-emeraldbrand bg-emeraldbrand-tint px-2 py-0.5 rounded-full shrink-0">+€22/hr</span>
@@ -723,7 +721,7 @@
                           class="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 bg-emeraldbrand hover:bg-emeraldbrand-dark text-white font-bold px-4 py-3.5 rounded-xl text-sm transition shadow-sm cursor-pointer">
                     <span>WhatsApp</span>
                   </button>
-                  <button type="button" onclick="bookCashToCleaner()"
+                  <button type="button" onclick="bookCashToCleaner(event)"
                           class="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 bg-emeraldbrand-tint hover:bg-emeraldbrand hover:text-white text-emeraldbrand border border-emeraldbrand/30 font-bold px-4 py-3.5 rounded-xl text-sm transition cursor-pointer">
                     <span>Pay Cash to Cleaner</span>
                   </button>
@@ -747,8 +745,7 @@
                 <span class="text-[10px] font-extrabold uppercase tracking-wider bg-amber-200/70 text-amber-900 px-2 py-0.5 rounded-full">Good to Know</span>
               </div>              <p class="text-xs sm:text-sm text-slate-700 leading-relaxed">
                 Please note that if your property has a high level of heavy contamination, stubborn dirt, or neglect, you may need to add an extra hour or two to your booking depending on the actual condition of the premises to ensure the best possible results.
-              </p>            </div>
-          </div>
+              </p>            </div>          </div>
 
         </div>
 
@@ -821,7 +818,7 @@
                   <span>Pay Online (Stripe Checkout)</span>
                 </button>
 
-                <button type="button" onclick="bookCashToCleaner()"
+                <button type="button" onclick="bookCashToCleaner(event)"
                         class="w-full py-3 px-5 rounded-xl bg-emeraldbrand-tint hover:bg-emeraldbrand hover:text-white text-emeraldbrand border border-emeraldbrand/30 font-bold text-sm transition flex items-center justify-center gap-2 cursor-pointer">
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/>
@@ -997,8 +994,7 @@
               <li class="flex items-start gap-2"><span class="text-emeraldbrand font-bold">✓</span><span>Kitchen worktops, hob surface, sink, splashback &amp; external appliance wipe-down.</span></li>
               <li class="flex items-start gap-2"><span class="text-emeraldbrand font-bold">✓</span><span>Making beds (on request), tidying surfaces, and emptying all household waste bins.</span></li>
             </ul>          </div>
-          <button type="button" onclick="jumpToService('regular')" class="w-full py-2.5 px-4 rounded-xl bg-slate-100 hover:bg-emeraldbrand hover:text-white text-navy font-bold text-xs transition cursor-pointer">
-            Book Regular Cleaning →
+          <button type="button" onclick="jumpToService('regular')" class="w-full py-2.5 px-4 rounded-xl bg-slate-100 hover:bg-emeraldbrand hover:text-white text-navy font-bold text-xs transition cursor-pointer">            Book Regular Cleaning →
           </button>
         </div>
 
@@ -1247,8 +1243,7 @@
             </div>
             <p class="text-xs text-slate-600 leading-relaxed">              Add dedicated extra time whenever a property has heavy build-up, stubborn grime, or neglected areas—ensuring our team never rushes and delivers thorough, spotless results.
             </p>
-          </div>
-        </div>
+          </div>        </div>
       </div>
     </div>
   </section>
@@ -1497,8 +1492,7 @@
         <div class="bg-white rounded-3xl p-7 border border-slate-200 shadow-card flex flex-col justify-between">          <div>
             <div class="flex items-center gap-1 text-amber-400 mb-4">
               <span>★</span><span>★</span><span>★</span><span>★</span><span>★</span>
-            </div>
-            <p class="text-slate-700 text-sm leading-relaxed mb-6">
+            </div>            <p class="text-slate-700 text-sm leading-relaxed mb-6">
               "Absolute lifesavers before our house handover in Westport. They steam-cleaned our corner sofa, washed all internal windows, mounted a 65-inch TV, and replaced bathroom silicone in one single visit. Unbeatable convenience."
             </p>
           </div>
@@ -1631,7 +1625,7 @@
     </div>
     <div class="flex items-center gap-1.5">
       <button type="button" onclick="openWhatsAppBooking()" class="bg-emeraldbrand text-white text-xs font-bold px-3 py-2.5 rounded-xl cursor-pointer">WhatsApp</button>
-      <button type="button" onclick="bookCashToCleaner()" class="bg-emeraldbrand-tint text-emeraldbrand border border-emeraldbrand/30 text-xs font-bold px-3 py-2.5 rounded-xl cursor-pointer">Cash</button>
+      <button type="button" onclick="bookCashToCleaner(event)" class="bg-emeraldbrand-tint text-emeraldbrand border border-emeraldbrand/30 text-xs font-bold px-3 py-2.5 rounded-xl cursor-pointer">Cash</button>
       <button type="button" onclick="openStripeCheckoutModal()" class="bg-navy text-white text-xs font-bold px-3.5 py-2.5 rounded-xl cursor-pointer">Pay Online</button>
     </div>
   </div>
@@ -1747,8 +1741,7 @@
 
       handymanFurniture: 1,
       handymanTv: 0,
-      handymanShelf: 0,
-      handymanSiliconeSqm: 0,
+      handymanShelf: 0,      handymanSiliconeSqm: 0,
       handymanPaintSqm: 0,
       handymanHours: 0,
 
@@ -1997,8 +1990,7 @@
               <span class="font-display font-bold text-navy text-sm sm:text-base block">Number of Bathrooms / En-suites (€39 / bathroom)</span>
               <span class="text-xs text-slate-500">
                 1st bathroom included in base • +€39 per additional bathroom
-                ${extraCost > 0 ? `<strong class="text-emeraldbrand ml-1">(+€${extraCost})</strong>` : ''}
-              </span>
+                ${extraCost > 0 ? `<strong class="text-emeraldbrand ml-1">(+€${extraCost})</strong>` : ''}              </span>
             </div>
           </div>
           <div class="inline-flex items-center justify-between sm:justify-end gap-2 bg-white border border-slate-200 rounded-xl p-1.5 shadow-xs self-start sm:self-center">
@@ -2247,8 +2239,7 @@
             </p>
           </div>
         `;
-      }
-    }
+      }    }
 
     function setOfficeMode(mode) { state.officeBillingMode = mode; renderStep2(); updateSummary(); }
     function setOfficeSqm(val) { state.officeSqm = Number(val); renderStep2(); updateSummary(); }
@@ -2497,8 +2488,7 @@
       if (state.addons.extraHours > 0) {
         const extraPrice = state.addons.extraHours * 22;
         addonItems.push({ name: `Extra Cleaning Hour (${state.addons.extraHours}h)`, price: extraPrice });
-        addonsTotal += extraPrice;
-      }
+        addonsTotal += extraPrice;      }
 
       const total = Math.round((basePrice + addonsTotal) * 100) / 100;
       return { serviceTitle, scopeDesc, basePrice, addonItems, addonsTotal, total };
@@ -2601,6 +2591,7 @@
       if (Number.isNaN(selected.getTime()) || selected < today) { showStep3Error('Please select a valid future booking date.'); goToStep(3); return false; }
       if (!state.timeSlot) { showStep3Error('Please select an arrival time.'); goToStep(3); return false; }
       document.getElementById('step4-validation-msg').classList.add('hidden');
+      document.getElementById('step3-validation-msg').classList.add('hidden');
       return true;
     }
 
@@ -2747,8 +2738,7 @@
     }
     function openStripeCheckoutModal() {
       if (!validateBookingForm()) return;
-      pendingBookingId = crypto.randomUUID();
-      const q = calculateQuote();
+      pendingBookingId = crypto.randomUUID();      const q = calculateQuote();
       document.getElementById('modal-summary-line').textContent = `${q.serviceTitle} • ${q.scopeDesc}`;
       document.getElementById('modal-datetime-line').textContent = `${formatReadableDate(state.date)} (${state.timeSlot})`;
       document.getElementById('modal-total-amount').textContent = formatEuro(q.total);
@@ -2775,7 +2765,7 @@
 
     async function bookCashToCleaner() {
       if (!validateBookingForm()) return;
-      const button = document.querySelector('button[onclick="bookCashToCleaner()"]');
+      const button = document.querySelector('button[onclick="bookCashToCleaner(event)"]');
       if (button) { button.disabled = true; button.textContent = 'Saving…'; }
       try {
         const bookingId = crypto.randomUUID();
@@ -2795,7 +2785,7 @@
         showStep4Error(error.message || 'Unable to save your booking. Please try again.');
         goToStep(4);
       } finally {
-        if (button) { button.disabled = false; button.textContent = 'Cash'; }
+        if (button) { button.disabled = false; button.textContent = originalButtonText; }
       }
     }
 
