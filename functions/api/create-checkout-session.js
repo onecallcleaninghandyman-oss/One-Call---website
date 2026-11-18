@@ -66,7 +66,12 @@ export async function onRequestPost({ request, env }) {
     const params = new URLSearchParams();
     params.set('mode', 'payment');
     params.set('ui_mode', 'form');
-params.set('integration_identifier', 'custom_embedded_web_0002');
+    params.set('billing_address_collection', 'auto');
+    params.set('phone_number_collection[enabled]', 'false');
+    params.set('automatic_tax[enabled]', 'false');
+    params.set('submit_type', 'pay');
+    params.set('saved_payment_method_options[payment_method_save]', 'enabled');
+    params.set('integration_identifier', 'custom_embedded_web_0002');
     params.set('return_url', `${origin}/?payment=complete&session_id={CHECKOUT_SESSION_ID}`);
     params.set('line_items[0][quantity]', '1');
     params.set('line_items[0][price_data][currency]', 'eur');
