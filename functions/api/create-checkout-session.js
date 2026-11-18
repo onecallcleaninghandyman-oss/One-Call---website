@@ -59,7 +59,7 @@ export async function onRequestPost({ request, env }) {
     if (!String(customer.name || '').trim() || !String(customer.phone || '').trim() || !String(customer.email || '').trim() || !String(customer.address || '').trim()) {
       return json({ error: 'Please enter your name, phone number, email address and address.' }, 400);
     }
-    if (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(String(customer.email).trim())) {
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(customer.email).trim())) {
       return json({ error: 'Please enter a valid email address.' }, 400);
     }
     const quote = calculateBooking(booking);
