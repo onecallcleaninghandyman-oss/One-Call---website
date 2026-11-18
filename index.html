@@ -682,6 +682,11 @@
                          class="w-full px-4 py-3 rounded-xl border border-slate-300 text-sm font-medium text-navy focus:outline-none focus:ring-2 focus:ring-emeraldbrand focus:border-emeraldbrand" />
                 </div>
                 <div class="sm:col-span-2">
+                  <label for="client-email" class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Email Address *</label>
+                  <input type="email" id="client-email" oninput="syncClientDetails()" placeholder="you@example.com" autocomplete="email" required
+                         class="w-full px-4 py-3 rounded-xl border border-slate-300 text-sm font-medium text-navy focus:outline-none focus:ring-2 focus:ring-emeraldbrand focus:border-emeraldbrand" />
+                </div>
+                <div class="sm:col-span-2">
                   <label for="client-address" class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Street Address &amp; Eircode (Castlebar / Co. Mayo) *</label>
                   <input type="text" id="client-address" oninput="syncClientDetails()" placeholder="e.g. 14 Springfield Lawn, Castlebar, Co. Mayo, F23 XXXX"
                          class="w-full px-4 py-3 rounded-xl border border-slate-300 text-sm font-medium text-navy focus:outline-none focus:ring-2 focus:ring-emeraldbrand focus:border-emeraldbrand" />
@@ -1805,6 +1810,7 @@
       client: {
         name: '',
         phone: '',
+        email: '',
         address: '',
         town: 'Castlebar',
         notes: ''
@@ -2437,12 +2443,14 @@
     function syncClientDetails() {
       const nameEl = document.getElementById('client-name');
       const phoneEl = document.getElementById('client-phone');
+      const emailEl = document.getElementById('client-email');
       const addrEl = document.getElementById('client-address');
       const townEl = document.getElementById('client-town');
       const notesEl = document.getElementById('client-notes');
 
       state.client.name = nameEl ? nameEl.value.trim() : '';
       state.client.phone = phoneEl ? phoneEl.value.trim() : '';
+      state.client.email = emailEl ? emailEl.value.trim() : '';
       state.client.address = addrEl ? addrEl.value.trim() : '';
       state.client.town = townEl ? townEl.value : 'Castlebar';
       state.client.notes = notesEl ? notesEl.value.trim() : '';
@@ -2643,8 +2651,8 @@
         // Use the design configured for this integration in Stripe Checkout Studio.
 
         syncClientDetails();
-        if (!state.client.name || !state.client.phone || !state.client.address) {
-          throw new Error('Please enter your name, phone number and address before paying.');
+        if (!state.client.name || !state.client.phone || !state.client.email || !state.client.address) {
+          throw new Error('Please enter your name, phone number, email address and property address before paying.');
         }
         const quote = calculateQuote();
         const response = await fetch('/api/create-checkout-session', {
