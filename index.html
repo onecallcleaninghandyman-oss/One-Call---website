@@ -1590,6 +1590,22 @@
 
       </div>
 
+      <div class="pt-6 pb-2 flex flex-col items-center justify-center gap-2 text-center">
+        <iframe
+          width="380"
+          height="38"
+          style="border:0; max-width:100%;"
+          src="https://climate.stripe.com/badge/QTVCSO?theme=light&amp;size=small&amp;locale=en-US"
+          title="Stripe Climate contribution badge"
+          loading="lazy"
+          referrerpolicy="strict-origin-when-cross-origin">
+        </iframe>
+        <a href="https://climate.stripe.com/mS7Vum" target="_blank" rel="noopener noreferrer"
+           class="text-xs text-slate-400 hover:text-emerald-300 transition">
+          Learn about our Stripe Climate commitment
+        </a>
+      </div>
+
       <div class="pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-400">
         <span>© 2026 One Call Cleaning &amp; Handyman Services. All rights reserved.</span>
         <span>Castlebar &amp; All County Mayo, Ireland</span>
@@ -1645,17 +1661,17 @@
       </div>
 
       <div id="payment-success-view" class="hidden p-6 text-center space-y-4 overflow-y-auto overscroll-contain">
-        <div class="w-16 h-16 rounded-full bg-emeraldbrand-tint text-emeraldbrand mx-auto flex items-center justify-center">
-          <svg class="w-9 h-9" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+        <div id="payment-status-icon" data-status="pending" class="w-16 h-16 rounded-full bg-amber-100 text-amber-600 mx-auto flex items-center justify-center">
+          <svg class="w-9 h-9" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path stroke-linecap="round" stroke-linejoin="round" d="M12 7v5l3 2"/></svg>
         </div>
-        <h4 class="font-display text-2xl font-extrabold text-navy">Booking Confirmed!</h4>
+        <h4 class="font-display text-2xl font-extrabold text-navy">Checking Payment Status…</h4>
         <p class="text-sm text-slate-600 leading-relaxed" id="success-receipt-text">
           Thank you! Your booking reference is <strong>#OC-MAYO</strong>.
         </p>
         <div class="pt-2 flex flex-col gap-2">
           <a href="https://wa.me/message/ONMSH6EA3JQRM1" target="_blank" rel="noopener noreferrer"
              class="w-full py-3 rounded-xl bg-emeraldbrand text-white font-bold text-sm hover:bg-emeraldbrand-dark transition">
-            Send Receipt to WhatsApp Team
+            Contact us on WhatsApp
           </a>
           <button type="button" onclick="closePaymentModal()" class="w-full py-2.5 rounded-xl bg-slate-100 text-navy font-bold text-xs cursor-pointer">
             Done
@@ -2793,6 +2809,24 @@
       document.getElementById('payment-success-view').classList.remove('hidden');
     }
 
+    function setPaymentStatusIcon(status) {
+      const icon = document.getElementById('payment-status-icon');
+      if (!icon) return;
+      const palette = {
+        success: 'bg-emeraldbrand-tint text-emeraldbrand',
+        error: 'bg-red-100 text-red-600',
+        pending: 'bg-amber-100 text-amber-600'
+      };
+      icon.dataset.status = status;
+      icon.className = 'w-16 h-16 rounded-full mx-auto flex items-center justify-center ' + (palette[status] || palette.pending);
+      const paths = {
+        success: '<path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>',
+        error: '<path stroke-linecap="round" stroke-linejoin="round" d="M6 6l12 12M18 6L6 18"/>',
+        pending: '<circle cx="12" cy="12" r="9"/><path stroke-linecap="round" stroke-linejoin="round" d="M12 7v5l3 2"/>'
+      };
+      icon.innerHTML = '<svg class="w-9 h-9" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">' + (paths[status] || paths.pending) + '</svg>';
+    }
+
     async function handleStripeReturn() {
       const url = new URL(window.location.href);
       if (url.searchParams.get('payment') !== 'complete') return;
@@ -2801,6 +2835,7 @@
       document.getElementById('payment-modal').classList.remove('hidden');
       document.getElementById('payment-form-view').classList.add('hidden');
       document.getElementById('payment-success-view').classList.remove('hidden');
+      setPaymentStatusIcon('pending');
       document.querySelector('#payment-success-view h4').textContent = 'Checking Payment Status…';
       document.getElementById('success-receipt-text').textContent = 'Verifying your payment securely with Stripe…';
       try {
@@ -2808,22 +2843,28 @@
         const result = await response.json();
         if (!response.ok) throw new Error(result.error || 'Unable to verify your payment.');
         if (result.status === 'paid') {
+          setPaymentStatusIcon('success');
           document.querySelector('#payment-success-view h4').textContent = 'Booking Confirmed!';
           document.getElementById('success-receipt-text').textContent = `Payment confirmed. Your booking has been saved successfully. Booking reference: OC-${String(result.bookingId).slice(0,8).toUpperCase()}.`;
         } else if (result.status === 'payment_failed') {
+          setPaymentStatusIcon('error');
           document.querySelector('#payment-success-view h4').textContent = 'Payment Not Completed';
           document.getElementById('success-receipt-text').textContent = 'The payment was not completed. No booking payment was recorded. You can return to the booking page and try another payment method.';
         } else if (result.status === 'open') {
+          setPaymentStatusIcon('error');
           document.querySelector('#payment-success-view h4').textContent = 'Payment Not Completed';
           document.getElementById('success-receipt-text').textContent = 'The payment was cancelled or did not complete. No successful payment was recorded. Please return to the booking form to try again.';
         } else if (result.status === 'expired') {
+          setPaymentStatusIcon('error');
           document.querySelector('#payment-success-view h4').textContent = 'Payment Session Expired';
           document.getElementById('success-receipt-text').textContent = 'This payment session has expired. Please return to the booking page and start a new payment.';
         } else {
+          setPaymentStatusIcon('pending');
           document.querySelector('#payment-success-view h4').textContent = 'Payment Processing';
           document.getElementById('success-receipt-text').textContent = 'Your payment is still processing. We will confirm the booking once Stripe confirms the payment. Please do not submit another payment.';
         }
       } catch (error) {
+        setPaymentStatusIcon('error');
         document.querySelector('#payment-success-view h4').textContent = 'Payment Status Unavailable';
         document.getElementById('success-receipt-text').textContent = error.message || 'Payment status could not be verified. Please contact us before trying to pay again.';
       } finally {

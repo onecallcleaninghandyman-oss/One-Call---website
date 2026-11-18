@@ -56,10 +56,11 @@ export async function onRequestPost({request,env}){
         VALUES(?,?,?,?,?,?,?,?,?,?,?,?, 'eur','stripe','paid',?,?,?,?)
         ON CONFLICT(id) DO NOTHING`)
         .bind(id,meta.service||'Online booking',meta.description||'',meta.booking_date||'',meta.booking_time||'',customer.name,customer.email,customer.phone,customer.address,customer.town,customer.notes,session.amount_total,session.id,JSON.stringify({date:meta.booking_date||'',timeSlot:meta.booking_time||'',service:meta.service||'',description:meta.description||'',client:customer}),now,now).run();
-      if(saved.meta?.changes===1){
-        await upsertCustomer(env.BOOKINGS_DB,customer,now);
-        await env.BOOKINGS_DB.prepare('UPDATE bookings SET customer_id=? WHERE id=?').bind(customer.email.trim().toLowerCase(),id).run();
-      }
+      // Mark the pending booking as paid, or update the row for legacy sessions.
+      await env.BOOKINGS_DB.prepare(`UPDATE bookings SET service=?,description=?,booking_date=?,booking_time=?,customer_name=?,customer_email=?,customer_phone=?,customer_address=?,customer_town=?,customer_notes=?,total_cents=?,currency='eur',payment_method='stripe',payment_status='paid',stripe_session_id=?,booking_json=?,updated_at=? WHERE id=?`)
+        .bind(meta.service||'Online booking',meta.description||'',meta.booking_date||'',meta.booking_time||'',customer.name,customer.email,customer.phone,customer.address,customer.town,customer.notes,session.amount_total,session.id,JSON.stringify({date:meta.booking_date||'',timeSlot:meta.booking_time||'',service:meta.service||'',description:meta.description||'',client:customer}),now,id).run();
+      await upsertCustomer(env.BOOKINGS_DB,customer,now);
+      await env.BOOKINGS_DB.prepare('UPDATE bookings SET customer_id=? WHERE id=?').bind(customer.email.trim().toLowerCase(),id).run();
     }
     // Failed or expired checkout sessions never create customer or booking rows.
     await env.BOOKINGS_DB.prepare('INSERT INTO stripe_events(id,event_type,created_at) VALUES(?,?,?) ON CONFLICT(id) DO NOTHING').bind(event.id,event.type,now).run();
