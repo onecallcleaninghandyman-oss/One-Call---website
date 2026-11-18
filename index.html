@@ -2685,21 +2685,9 @@
         const checkout = stripe.initCheckoutFormSdk({ clientSecret, appearance });
         container.innerHTML = '';
 
-        const form = checkout.createForm({
-          layout: 'expanded',
-          expressCheckout: {
-            buttonHeight: 44,
-            buttonTheme: { applePay: 'black', googlePay: 'black' },
-            paymentMethods: {
-              applePay: 'always',
-              googlePay: 'always',
-              link: 'never',
-              klarna: 'never',
-              paypal: 'never',
-              amazonPay: 'never'
-            }
-          }
-        });
+        // Stripe Checkout uses the active payment-method configuration from the
+        // Stripe Dashboard. Do not override individual methods in the client.
+        const form = checkout.createForm({ layout: 'expanded' });
         form.mount('#checkout-form');
         activeStripeForm = form;
 
