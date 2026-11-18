@@ -22,6 +22,7 @@
 5. In Stripe Dashboard, configure webhook URL `https://YOUR-DOMAIN/api/stripe-webhook` for:
    - `checkout.session.completed`
    - `checkout.session.async_payment_succeeded`
+   - `checkout.session.async_payment_failed`
    - `checkout.session.expired`
 6. Use matching Stripe test keys and webhook secret in Preview/Test first. Do not accept live payments until a successful end-to-end test is completed.
 
