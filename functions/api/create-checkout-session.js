@@ -66,6 +66,7 @@ export async function onRequestPost({ request, env }) {
     const params = new URLSearchParams();
     params.set('mode', 'payment');
     params.set('ui_mode', 'form');
+    params.set('locale', 'en');
     params.set('billing_address_collection', 'auto');
     params.set('submit_type', 'pay');
     params.set('integration_identifier', 'custom_embedded_web_0002');
