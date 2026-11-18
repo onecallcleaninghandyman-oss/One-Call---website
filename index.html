@@ -2637,7 +2637,8 @@
           }
         });
         container.innerHTML = `
-          <div id="express-checkout-element" class="mb-4"></div>
+          <div id="express-checkout-element" class="mb-2"></div>
+          <div id="express-checkout-diagnostic" class="mb-3 text-xs text-slate-500" role="status" aria-live="polite">Checking Apple Pay and Google Pay availability…</div>
           <div class="flex items-center gap-3 my-4 text-xs text-slate-400"><span class="h-px bg-slate-200 flex-1"></span><span>OR</span><span class="h-px bg-slate-200 flex-1"></span></div>
           <div id="payment-element"></div>
           <button id="stripe-pay-button" type="button" class="mt-5 w-full rounded-xl bg-emeraldbrand px-5 py-3.5 text-white font-bold text-sm hover:bg-emeraldbrand-dark transition">Pay securely</button>
@@ -2651,6 +2652,28 @@
             amazonPay: 'never'
           },
           layout: { maxColumns: 2, maxRows: 1, overflow: 'never' }
+        });
+        // Report the wallet methods Stripe actually makes available in this browser.
+        expressCheckout.on('ready', (event) => {
+          const methods = event?.availablePaymentMethods || {};
+          const apple = methods.applePay ? 'available' : 'not available';
+          const google = methods.googlePay ? 'available' : 'not available';
+          const diagnostic = document.getElementById('express-checkout-diagnostic');
+          if (diagnostic) {
+            diagnostic.textContent = `Apple Pay: ${apple} · Google Pay: ${google}`;
+            diagnostic.dataset.applePay = methods.applePay ? 'available' : 'unavailable';
+            diagnostic.dataset.googlePay = methods.googlePay ? 'available' : 'unavailable';
+          }
+          console.info('[Stripe Express Checkout] Wallet availability:', {
+            applePay: !!methods.applePay,
+            googlePay: !!methods.googlePay,
+            availablePaymentMethods: methods
+          });
+        });
+        expressCheckout.on('loaderror', (event) => {
+          console.error('[Stripe Express Checkout] Load error:', event);
+          const diagnostic = document.getElementById('express-checkout-diagnostic');
+          if (diagnostic) diagnostic.textContent = 'Wallet buttons could not load. Check the browser console for Stripe details.';
         });
         expressCheckout.mount('#express-checkout-element');
 
