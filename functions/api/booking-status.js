@@ -11,6 +11,6 @@ export async function onRequestGet({request,env}) {
     if(!response.ok) return json({error:'Unable to verify payment with Stripe.'},502);
     const paid=session.payment_status==='paid'&&session.status==='complete'&&session.currency==='eur'&&session.amount_total===row.total_cents;
     if(paid&&row.payment_status!=='paid') await env.BOOKINGS_DB.prepare("UPDATE bookings SET payment_status='paid',updated_at=? WHERE id=? AND stripe_session_id=?").bind(new Date().toISOString(),bookingId,sessionId).run();
-    return json({status:paid?'paid':session.payment_status==='unpaid'?'unpaid':'processing',bookingId});
+    return json({status:paid?'paid':row.payment_status==='expired'?'expired':row.payment_status==='payment_failed'?'payment_failed':session.payment_status==='unpaid'?'unpaid':'processing',bookingId});
   } catch(error) { console.error('Booking status error',error); return json({error:'Unable to verify booking status.'},500); }
 }
