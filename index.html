@@ -721,7 +721,7 @@
                   </button>
                   <button type="button" onclick="openStripeCheckoutModal()"
                           class="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 bg-navy hover:bg-navy-light text-white font-bold px-6 py-3.5 rounded-xl text-sm transition shadow-sm cursor-pointer">
-                    <span>Pay Online (Stripe)</span>
+                    <span>Pay Online</span>
                   </button>
                 </div>
               </div>
@@ -806,7 +806,7 @@
                   <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
                   </svg>
-                  <span>Pay Online (Stripe Checkout)</span>
+                  <span>Pay Online</span>
                 </button>
 
                 <button type="button" onclick="bookCashToCleaner(event)"
@@ -2057,13 +2057,8 @@
               <span class="font-display font-extrabold text-2xl text-emeraldbrand shrink-0">€91</span>
             </div>
             <p class="text-xs sm:text-sm text-slate-600 leading-relaxed">
-              Complete general deep cleaning of your kitchen only: full degreasing of worktops, hob, tiled splashbacks, sink, chrome taps, external cupboard doors &amp; handles, kickboards, bin area, and deep floor scrubbing.
+              Complete general deep cleaning of your kitchen only: full degreasing of worktops, hob, tiled splashbacks, sink, chrome taps, external cupboard doors &amp; handles, kickboards, bin area, and deep floor scrubbing. Inside oven and microwave cleaning are included in this service.
             </p>
-            <div class="pt-2 flex flex-wrap gap-2">
-              <button type="button" onclick="jumpToAddons()" class="text-xs font-bold text-emeraldbrand bg-white border border-emeraldbrand/30 px-3.5 py-2 rounded-xl hover:bg-emeraldbrand hover:text-white transition cursor-pointer">
-                + Add Oven (€35), Fridge (€18), Cupboards (€25), Hood (€15) or Microwave (€5)
-              </button>
-            </div>
           </div>
         `;
       } else if (state.service === 'move') {
@@ -2444,10 +2439,10 @@
 
       const addonItems = [];
       let addonsTotal = 0;
-      if (state.addons.oven) { addonItems.push({ name: 'Oven Cleaning', price: 35 }); addonsTotal += 35; }
+      if (state.addons.oven && state.service !== 'kitchen') { addonItems.push({ name: 'Oven Cleaning', price: 35 }); addonsTotal += 35; }
       if (state.addons.fridge) { addonItems.push({ name: 'Fridge Cleaning', price: 18 }); addonsTotal += 18; }      if (state.addons.cupboards) { addonItems.push({ name: 'Inside Kitchen Cupboards', price: 25 }); addonsTotal += 25; }
       if (state.addons.hood) { addonItems.push({ name: 'Extractor Hood Cleaning', price: 15 }); addonsTotal += 15; }
-      if (state.addons.microwave) { addonItems.push({ name: 'Microwave Cleaning (Inside)', price: 5 }); addonsTotal += 5; }
+      if (state.addons.microwave && state.service !== 'kitchen') { addonItems.push({ name: 'Microwave Cleaning (Inside)', price: 5 }); addonsTotal += 5; }
       if (state.addons.stairs) { addonItems.push({ name: 'Stair Cleaning', price: 20 }); addonsTotal += 20; }
       if (state.addons.windowsCount > 0) {
         const winPrice = state.addons.windowsCount * 12;
