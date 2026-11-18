@@ -70,7 +70,6 @@ export async function onRequestPost({ request, env }) {
 params.set('automatic_tax[enabled]', 'false');
 params.set('submit_type', 'pay');
 params.set('integration_identifier', 'custom_embedded_web_0002');
-    params.set('saved_payment_method_options[payment_method_save]', 'enabled');
     params.set('return_url', `${origin}/?payment=complete&session_id={CHECKOUT_SESSION_ID}`);
     params.set('line_items[0][quantity]', '1');
     params.set('line_items[0][price_data][currency]', 'eur');
