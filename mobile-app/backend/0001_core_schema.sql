@@ -5,7 +5,7 @@ PRAGMA foreign_keys = ON;
 
 CREATE TABLE IF NOT EXISTS mobile_accounts (
  id TEXT PRIMARY KEY, email TEXT NOT NULL UNIQUE COLLATE NOCASE,
- role TEXT NOT NULL CHECK (role IN ('cleaner','upholstery_cleaner','handyman','manager','owner')),
+ role TEXT NOT NULL CHECK (role IN ('cleaner','upholstery_cleaner','handyman','manager')),
  account_status TEXT NOT NULL DEFAULT 'active' CHECK (account_status IN ('active','suspended','deletion_requested','deactivated')),
  first_name TEXT, last_name TEXT, phone TEXT, address TEXT, avatar_url TEXT,
  auth_provider TEXT NOT NULL DEFAULT 'pending', auth_subject TEXT,
@@ -50,5 +50,5 @@ CREATE TABLE IF NOT EXISTS mobile_audit_log (
 
 -- Customer accounts/registration are intentionally excluded from this app.
 -- Role checks must be enforced server-side using a verified session.
--- Owner is the highest privilege and cannot be assigned through public registration.
+-- Manager is the highest privilege and controls all app operations.
 -- Worker balances are derived from posted ledger entries; never edit historical entries.
