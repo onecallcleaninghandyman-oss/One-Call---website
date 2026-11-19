@@ -51,14 +51,22 @@ export async function onRequestPost({request,env}){
       });
       if(!stripeUpdate.ok){const detail=await stripeUpdate.json();console.error('Stripe Customer update failed',detail);return new Response('Unable to update Stripe Customer',{status:502});}
 
-      const saved=await env.BOOKINGS_DB.prepare(`INSERT INTO bookings
-        (id,service,description,booking_date,booking_time,customer_name,customer_email,customer_phone,customer_address,customer_town,customer_notes,total_cents,currency,payment_method,payment_status,stripe_session_id,booking_json,created_at,updated_at)
-        VALUES(?,?,?,?,?,?,?,?,?,?,?,?, 'eur','stripe','paid',?,?,?,?)
+      const subtotalCents=Number(meta.subtotal_cents||session.amount_subtotal||session.amount_total||0);
+      const discountPercent=Number(meta.discount_percent||0);
+      const discountCents=Number(meta.discount_cents||0);
+      const tipCents=Number(meta.tip_cents||0);
+      let serviceItems=[];
+      try { const parsed=JSON.parse(meta.service_items_json||'[]'); if(Array.isArray(parsed)) serviceItems=parsed; } catch {}
+      const pricing={subtotalCents,discountPercent,discountCents,tipCents,totalCents:session.amount_total,serviceItems};
+      const bookingData={date:meta.booking_date||'',timeSlot:meta.booking_time||'',service:meta.service||'',description:meta.description||'',client:customer,pricing};
+      await env.BOOKINGS_DB.prepare(`INSERT INTO bookings
+        (id,service,description,booking_date,booking_time,customer_name,customer_email,customer_phone,customer_address,customer_town,customer_notes,total_cents,subtotal_cents,discount_percent,discount_cents,tip_cents,service_items_json,currency,payment_method,payment_status,stripe_session_id,booking_json,created_at,updated_at)
+        VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,'eur','stripe','paid',?,?,?,?)
         ON CONFLICT(id) DO NOTHING`)
-        .bind(id,meta.service||'Online booking',meta.description||'',meta.booking_date||'',meta.booking_time||'',customer.name,customer.email,customer.phone,customer.address,customer.town,customer.notes,session.amount_total,session.id,JSON.stringify({date:meta.booking_date||'',timeSlot:meta.booking_time||'',service:meta.service||'',description:meta.description||'',client:customer}),now,now).run();
-      // Mark the pending booking as paid, or update the row for legacy sessions.
-      await env.BOOKINGS_DB.prepare(`UPDATE bookings SET service=?,description=?,booking_date=?,booking_time=?,customer_name=?,customer_email=?,customer_phone=?,customer_address=?,customer_town=?,customer_notes=?,total_cents=?,currency='eur',payment_method='stripe',payment_status='paid',stripe_session_id=?,booking_json=?,updated_at=? WHERE id=?`)
-        .bind(meta.service||'Online booking',meta.description||'',meta.booking_date||'',meta.booking_time||'',customer.name,customer.email,customer.phone,customer.address,customer.town,customer.notes,session.amount_total,session.id,JSON.stringify({date:meta.booking_date||'',timeSlot:meta.booking_time||'',service:meta.service||'',description:meta.description||'',client:customer}),now,id).run();
+        .bind(id,meta.service||'Online booking',meta.description||'',meta.booking_date||'',meta.booking_time||'',customer.name,customer.email,customer.phone,customer.address,customer.town,customer.notes,session.amount_total,subtotalCents,discountPercent,discountCents,tipCents,JSON.stringify(serviceItems),session.id,JSON.stringify(bookingData),now,now).run();
+      // Keep the payment record and the booking's full pricing breakdown in sync.
+      await env.BOOKINGS_DB.prepare(`UPDATE bookings SET service=?,description=?,booking_date=?,booking_time=?,customer_name=?,customer_email=?,customer_phone=?,customer_address=?,customer_town=?,customer_notes=?,total_cents=?,subtotal_cents=?,discount_percent=?,discount_cents=?,tip_cents=?,service_items_json=?,currency='eur',payment_method='stripe',payment_status='paid',stripe_session_id=?,booking_json=?,updated_at=? WHERE id=?`)
+        .bind(meta.service||'Online booking',meta.description||'',meta.booking_date||'',meta.booking_time||'',customer.name,customer.email,customer.phone,customer.address,customer.town,customer.notes,session.amount_total,subtotalCents,discountPercent,discountCents,tipCents,JSON.stringify(serviceItems),session.id,JSON.stringify(bookingData),now,id).run();
       await upsertCustomer(env.BOOKINGS_DB,customer,now);
       await env.BOOKINGS_DB.prepare('UPDATE bookings SET customer_id=? WHERE id=?').bind(customer.email.trim().toLowerCase(),id).run();
     }
