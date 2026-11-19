@@ -16,7 +16,7 @@ Important gaps before a safe production app:
 5. Existing payment flow should remain unchanged while mobile endpoints are developed separately.
 6. Worker balances require an append-only ledger and reconciled payout workflow; do not infer balances from Stripe customer records.
 7. The app has exactly four staff roles: cleaner, upholstery_cleaner, handyman, and manager. Manager is the highest-privilege role; there is no owner role.
-8. Manager-facing booking finance must expose gross booking price, customer discount, worker earnings, company share, and net totals. The exact earnings/company-share calculation must be defined centrally on the backend and must not be guessed in the app.
+8. Manager-facing booking finance must expose gross booking price, customer discount, worker earnings, company share, and net totals. The normal worker earnings/company-share calculation must be defined centrally on the backend and must not be guessed in the app. A manager-awarded cleaner bonus is 5%–15% of that individual cleaner's normal earnings for the booking, not a percentage of the customer's total booking price. It is added on top of normal earnings, paid to the selected cleaner(s), and recorded as a separate append-only ledger entry. The purpose is extra compensation for difficult or unusually dirty jobs.
 9. Managers may set customer discounts from 5% to 15%, but the discount is applied by the website backend before Stripe Checkout. The staff app may provide the manager control; it must not become a customer booking/payment interface.
 10. Manager controls include all staff and booking records, assignments/reassignments, crew size, booking date/time changes, and staff block/unblock actions. These actions require server-side authorization and audit-log entries.
 
