@@ -70,7 +70,7 @@ export async function onRequestPost({request,env}){
       await upsertCustomer(env.BOOKINGS_DB,customer,now);
       await env.BOOKINGS_DB.prepare('UPDATE bookings SET customer_id=? WHERE id=?').bind(customer.email.trim().toLowerCase(),id).run();
     }
-    // Failed or expired checkout sessions never create customer or booking rows.
+    // Failed or expired checkout sessions never create booking rows. Their pre-registered customer contact row may remain in D1.
     await env.BOOKINGS_DB.prepare('INSERT INTO stripe_events(id,event_type,created_at) VALUES(?,?,?) ON CONFLICT(id) DO NOTHING').bind(event.id,event.type,now).run();
     return Response.json({received:true});
   }catch(error){console.error('Stripe webhook processing failed',error);return new Response('Webhook processing failed',{status:500});}
