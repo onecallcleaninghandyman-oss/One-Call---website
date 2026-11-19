@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-enum StaffRole { cleaner, upholsteryCleaner, handyman, manager, owner }
+enum StaffRole { cleaner, upholsteryCleaner, handyman, manager }
 
 extension StaffRoleLabel on StaffRole {
   String get label => switch (this) {
@@ -8,7 +8,6 @@ extension StaffRoleLabel on StaffRole {
     StaffRole.upholsteryCleaner => 'Upholstery / Chemical Cleaning',
     StaffRole.handyman => 'Handyman',
     StaffRole.manager => 'Manager',
-    StaffRole.owner => 'Owner',
   };
 }
 
@@ -17,7 +16,6 @@ const appAccessGroups = <StaffRole>[
   StaffRole.upholsteryCleaner,
   StaffRole.handyman,
   StaffRole.manager,
-  StaffRole.owner,
 ];
 
 void main() => runApp(const OneCallApp());
@@ -106,7 +104,7 @@ class _DashboardPage extends StatelessWidget {
         const _SummaryCard(icon: Icons.payments_outlined, title: 'Company balance', value: '—', caption: 'Calculated from the verified finance ledger'),
         const _SummaryCard(icon: Icons.groups_outlined, title: 'My crew', value: '—', caption: 'Crew members are shown for each assigned job'),
         const SizedBox(height: 12),
-        const Text('Access is restricted to five staff groups: Cleaner, Upholstery / Chemical Cleaning, Handyman, Manager and Owner. Customers do not have app accounts.'),
+        const Text('Access is restricted to four staff groups: Cleaner, Upholstery / Chemical Cleaning, Handyman and Manager. Manager has full administrative access. Customers do not have app accounts. Customers do not have app accounts.'),
       ],
     );
   }
