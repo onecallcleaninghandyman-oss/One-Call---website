@@ -14,7 +14,11 @@ Important gaps before a safe production app:
 3. A completed-booking timestamp/status is not yet written by the inspected webhook. Therefore the requested 30-day discount must not be activated until a manager-controlled completion workflow and exact D1 columns/status values are confirmed.
 4. Customer discount logic belongs exclusively on the existing website booking/checkout flow, before Stripe Checkout is created. It must not be exposed as a customer feature in the staff app. The server must determine eligibility using the customer's prior completed booking and its completion timestamp (within 30 days); client-submitted discount values must never be trusted.
 5. Existing payment flow should remain unchanged while mobile endpoints are developed separately.
-5. Worker balances require an append-only ledger and reconciled payout workflow; do not infer balances from Stripe customer records.
+6. Worker balances require an append-only ledger and reconciled payout workflow; do not infer balances from Stripe customer records.
+7. The app has exactly four staff roles: cleaner, upholstery_cleaner, handyman, and manager. Manager is the highest-privilege role; there is no owner role.
+8. Manager-facing booking finance must expose gross booking price, customer discount, worker earnings, company share, and net totals. The exact earnings/company-share calculation must be defined centrally on the backend and must not be guessed in the app.
+9. Managers may set customer discounts from 5% to 15%, but the discount is applied by the website backend before Stripe Checkout. The staff app may provide the manager control; it must not become a customer booking/payment interface.
+10. Manager controls include all staff and booking records, assignments/reassignments, crew size, booking date/time changes, and staff block/unblock actions. These actions require server-side authorization and audit-log entries.
 
 ## Integration decision
 Extend the existing `BOOKINGS_DB` database and existing `bookings` records. Do not create a second bookings table. New mobile-specific tables are prefixed with `mobile_` or `worker_` and are isolated from the current website checkout until tested.
