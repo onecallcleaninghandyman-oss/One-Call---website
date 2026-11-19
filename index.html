@@ -2844,6 +2844,10 @@
         document.getElementById('modal-total-amount').textContent = formatEuro(result.total ?? q.total);
         document.getElementById('payment-modal').classList.remove('hidden');
         showBookingSuccessReceipt('Cash to Cleaner — payment due on arrival', result.bookingId, result.total ?? q.total);
+        if (result.discount > 0) {
+          const receipt = document.getElementById('success-receipt-text');
+          receipt.textContent += ` A ${result.discountPercent}% repeat-customer discount of ${formatEuro(result.discount)} has been applied.`;
+        }
       } catch (error) {
         showStep4Error(error.message || 'Unable to save your booking. Please try again.');
         goToStep(4);
