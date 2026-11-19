@@ -18,3 +18,13 @@ IMPORTANT:
 - Use Stripe TEST keys and a test webhook secret first. Do not use live keys until the full test payment is successful.
 - The server recalculates the service price from submitted booking selections. It does not trust a client-supplied total.
 - The webhook verifies Stripe's signature and logs verified completed payments. Durable booking storage, email notifications, and availability conflict prevention are not included yet; add these before relying on the website as a full booking-management system.
+
+
+LOYALTY DISCOUNT + CUSTOMER TIPS (migration 0004)
+- Apply migrations/0004_repeat_customer_discount_tips.sql to the existing BOOKINGS_DB D1 database before deploying the updated Functions.
+- A customer is eligible for the automatic 10% repeat-customer discount only when the same normalized email/customer_id has a booking with job_status='completed' and completed_at within the previous 30 days.
+- The checkout endpoint pre-registers the customer in D1 before payment without incrementing bookings_count. An abandoned checkout therefore does not count as a booking.
+- The 10% discount is calculated server-side on the service and selected add-ons. Tips are not discounted.
+- Customers can enter an optional tip in the embedded checkout. Stripe receives separate line items for the selected service/add-ons and the customer tip; discount amounts and the pricing breakdown are also saved in Stripe Session/PaymentIntent metadata and the D1 booking record.
+- Existing historical bookings are not automatically marked completed. A manager/staff completion workflow must record job_status='completed' and completed_at after the work is actually finished; payment alone is not proof of completion.
+- The updated code is in the mobile-app-foundation branch. It is not live until the branch is deployed and migration 0004 has been applied to the production D1 database.
