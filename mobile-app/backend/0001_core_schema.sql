@@ -1,78 +1,66 @@
--- Initial target schema for Cloudflare D1.
--- Apply only after comparing with the live D1 schema; do not run blindly on production.
+-- One Call mobile extension for the EXISTING website D1 database.
+-- Existing tables are bookings, customers and stripe_events. Do not recreate them.
+-- Apply this migration only after taking a D1 backup and checking the live schema.
 PRAGMA foreign_keys = ON;
 
-CREATE TABLE IF NOT EXISTS app_users (
+CREATE TABLE IF NOT EXISTS mobile_accounts (
   id TEXT PRIMARY KEY,
   email TEXT NOT NULL UNIQUE COLLATE NOCASE,
-  password_hash TEXT,
   role TEXT NOT NULL CHECK (role IN ('customer','worker','manager')),
-  status TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active','suspended','deletion_requested','deactivated')),
+  account_status TEXT NOT NULL DEFAULT 'active'
+    CHECK (account_status IN ('active','suspended','deletion_requested','deactivated')),
   first_name TEXT,
   last_name TEXT,
   phone TEXT,
   address TEXT,
   avatar_url TEXT,
+  auth_provider TEXT NOT NULL DEFAULT 'pending',
+  auth_subject TEXT,
   created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  deactivated_at TEXT
+  deactivated_at TEXT,
+  UNIQUE(auth_provider, auth_subject)
 );
 
-CREATE TABLE IF NOT EXISTS bookings (
-  id TEXT PRIMARY KEY,
-  customer_id TEXT NOT NULL REFERENCES app_users(id),
-  status TEXT NOT NULL CHECK (status IN ('pending','confirmed','in_progress','completed','cancelled')),
-  service_code TEXT NOT NULL,
-  service_description TEXT,
-  scheduled_at TEXT,
-  completed_at TEXT,
-  subtotal_cents INTEGER NOT NULL CHECK (subtotal_cents >= 0),
-  discount_cents INTEGER NOT NULL DEFAULT 0 CHECK (discount_cents >= 0),
-  total_cents INTEGER NOT NULL CHECK (total_cents >= 0),
-  currency TEXT NOT NULL DEFAULT 'eur',
-  stripe_checkout_session_id TEXT UNIQUE,
-  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE INDEX IF NOT EXISTS idx_bookings_customer_completed
-ON bookings(customer_id, status, completed_at);
-
-CREATE TABLE IF NOT EXISTS booking_assignments (
+-- Existing bookings are the source of truth; this table only links workers to them.
+CREATE TABLE IF NOT EXISTS worker_booking_assignments (
   booking_id TEXT NOT NULL REFERENCES bookings(id),
-  worker_id TEXT NOT NULL REFERENCES app_users(id),
-  assignment_status TEXT NOT NULL DEFAULT 'assigned' CHECK (assignment_status IN ('invited','assigned','accepted','declined','completed')),
+  worker_id TEXT NOT NULL REFERENCES mobile_accounts(id),
+  assignment_status TEXT NOT NULL DEFAULT 'assigned'
+    CHECK (assignment_status IN ('invited','assigned','accepted','declined','completed')),
   assigned_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (booking_id, worker_id)
 );
+CREATE INDEX IF NOT EXISTS idx_worker_assignments_worker
+  ON worker_booking_assignments(worker_id, assignment_status);
 
-CREATE INDEX IF NOT EXISTS idx_assignments_worker_status
-ON booking_assignments(worker_id, assignment_status);
-
--- Append-only accounting journal. Store positive amounts and explicit debit/credit direction.
-CREATE TABLE IF NOT EXISTS finance_ledger (
+-- Append-only ledger. Balances are derived from posted entries, never edited in place.
+CREATE TABLE IF NOT EXISTS worker_finance_ledger (
   id TEXT PRIMARY KEY,
-  worker_id TEXT REFERENCES app_users(id),
+  worker_id TEXT NOT NULL REFERENCES mobile_accounts(id),
   booking_id TEXT REFERENCES bookings(id),
   entry_type TEXT NOT NULL,
-  direction TEXT NOT NULL CHECK (direction IN ('company_owes_worker','worker_owes_company','payment_to_worker','payment_from_worker','company_fee','adjustment')),
+  direction TEXT NOT NULL CHECK (direction IN (
+    'company_owes_worker','worker_owes_company','payment_to_worker',
+    'payment_from_worker','company_fee','adjustment'
+  )),
   amount_cents INTEGER NOT NULL CHECK (amount_cents > 0),
   currency TEXT NOT NULL DEFAULT 'eur',
-  status TEXT NOT NULL DEFAULT 'posted' CHECK (status IN ('pending','posted','reversed')),
+  entry_status TEXT NOT NULL DEFAULT 'posted'
+    CHECK (entry_status IN ('pending','posted','reversed')),
   external_reference TEXT,
   description TEXT,
-  created_by TEXT REFERENCES app_users(id),
+  created_by TEXT REFERENCES mobile_accounts(id),
   created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  reverses_entry_id TEXT REFERENCES finance_ledger(id)
+  reverses_entry_id TEXT REFERENCES worker_finance_ledger(id)
 );
+CREATE INDEX IF NOT EXISTS idx_worker_ledger_worker_date
+  ON worker_finance_ledger(worker_id, created_at);
 
-CREATE INDEX IF NOT EXISTS idx_ledger_worker_date
-ON finance_ledger(worker_id, created_at);
-
-CREATE TABLE IF NOT EXISTS payment_transactions (
+CREATE TABLE IF NOT EXISTS mobile_payment_transactions (
   id TEXT PRIMARY KEY,
   booking_id TEXT REFERENCES bookings(id),
-  worker_id TEXT REFERENCES app_users(id),
+  worker_id TEXT REFERENCES mobile_accounts(id),
   stripe_payment_intent_id TEXT UNIQUE,
   stripe_checkout_session_id TEXT UNIQUE,
   amount_cents INTEGER NOT NULL CHECK (amount_cents >= 0),
@@ -85,17 +73,18 @@ CREATE TABLE IF NOT EXISTS payment_transactions (
 
 CREATE TABLE IF NOT EXISTS account_deletion_requests (
   id TEXT PRIMARY KEY,
-  user_id TEXT NOT NULL REFERENCES app_users(id),
-  status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending','approved','rejected')),
+  account_id TEXT NOT NULL REFERENCES mobile_accounts(id),
+  request_status TEXT NOT NULL DEFAULT 'pending'
+    CHECK (request_status IN ('pending','approved','rejected')),
   requested_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  reviewed_by TEXT REFERENCES app_users(id),
+  reviewed_by TEXT REFERENCES mobile_accounts(id),
   reviewed_at TEXT,
   manager_note TEXT
 );
 
-CREATE TABLE IF NOT EXISTS audit_log (
+CREATE TABLE IF NOT EXISTS mobile_audit_log (
   id TEXT PRIMARY KEY,
-  actor_user_id TEXT REFERENCES app_users(id),
+  actor_account_id TEXT REFERENCES mobile_accounts(id),
   action TEXT NOT NULL,
   entity_type TEXT NOT NULL,
   entity_id TEXT NOT NULL,
@@ -103,12 +92,14 @@ CREATE TABLE IF NOT EXISTS audit_log (
   created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
--- Discount eligibility query:
+-- Repeat-customer discount eligibility (run server-side against the existing bookings table):
 -- SELECT EXISTS (
 --   SELECT 1 FROM bookings
---   WHERE customer_id = ? AND status = 'completed'
+--   WHERE lower(customer_email) = lower(?)
+--     AND lower(status) = 'completed'
 --     AND completed_at >= datetime('now', '-30 days')
 --     AND completed_at <= datetime('now')
 -- );
--- Execute on the server immediately before creating the checkout session.
--- Never accept a client-supplied discount or final amount as authoritative.
+-- IMPORTANT: inspect the deployed bookings columns/status values before using this query.
+-- Current website code shown in this repo does not yet persist a completed_at/status workflow.
+-- Never trust discount amounts supplied by the mobile app or browser.
