@@ -5,7 +5,7 @@ ALTER TABLE bookings ADD COLUMN job_status TEXT NOT NULL DEFAULT 'scheduled'
 ALTER TABLE bookings ADD COLUMN completed_at TEXT;
 ALTER TABLE bookings ADD COLUMN subtotal_cents INTEGER NOT NULL DEFAULT 0;
 ALTER TABLE bookings ADD COLUMN discount_percent INTEGER NOT NULL DEFAULT 0
-  CHECK (discount_percent IN (0,10));
+  CHECK (discount_percent BETWEEN 0 AND 15);
 ALTER TABLE bookings ADD COLUMN discount_cents INTEGER NOT NULL DEFAULT 0;
 ALTER TABLE bookings ADD COLUMN tip_cents INTEGER NOT NULL DEFAULT 0;
 ALTER TABLE bookings ADD COLUMN service_items_json TEXT NOT NULL DEFAULT '[]';
