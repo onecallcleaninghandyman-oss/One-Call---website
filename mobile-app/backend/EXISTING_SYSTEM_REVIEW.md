@@ -12,7 +12,8 @@ Important gaps before a safe production app:
 1. The current website checkout creates a booking only after Stripe confirms payment; worker scheduling/assignment and job completion status are not implemented in the inspected webhook.
 2. There is no verified app sign-in/session or role-based access API in the inspected files.
 3. A completed-booking timestamp/status is not yet written by the inspected webhook. Therefore the requested 30-day discount must not be activated until a manager-controlled completion workflow and exact D1 columns/status values are confirmed.
-4. Existing payment flow should remain unchanged while mobile endpoints are developed separately.
+4. Customer discount logic belongs exclusively on the existing website booking/checkout flow, before Stripe Checkout is created. It must not be exposed as a customer feature in the staff app. The server must determine eligibility using the customer's prior completed booking and its completion timestamp (within 30 days); client-submitted discount values must never be trusted.
+5. Existing payment flow should remain unchanged while mobile endpoints are developed separately.
 5. Worker balances require an append-only ledger and reconciled payout workflow; do not infer balances from Stripe customer records.
 
 ## Integration decision
