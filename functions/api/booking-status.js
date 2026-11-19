@@ -30,11 +30,20 @@ export async function onRequestGet({request,env}) {
       };
       if(!customer.email) return json({error:'Paid payment is missing customer email.'},422);
       const now=new Date().toISOString();
+      const subtotalCents=Number(m.subtotal_cents||session.amount_subtotal||session.amount_total||0);
+      const discountPercent=Number(m.discount_percent||0);
+      const discountCents=Number(m.discount_cents||0);
+      const tipCents=Number(m.tip_cents||0);
+      let serviceItems=[];
+      try { const parsed=JSON.parse(m.service_items_json||'[]'); if(Array.isArray(parsed)) serviceItems=parsed; } catch {}
+      const pricing={subtotalCents,discountPercent,discountCents,tipCents,totalCents:session.amount_total,serviceItems};
+      const bookingData={date:m.booking_date||'',timeSlot:m.booking_time||'',service:m.service||'',description:m.description||'',client:customer,jobStatus:'scheduled',completedAt:null,pricing};
       await env.BOOKINGS_DB.prepare(`INSERT INTO bookings
         (id,service,description,booking_date,booking_time,customer_name,customer_email,customer_phone,customer_address,customer_town,customer_notes,total_cents,currency,payment_method,payment_status,stripe_session_id,booking_json,created_at,updated_at)
         VALUES(?,?,?,?,?,?,?,?,?,?,?,?, 'eur','stripe','paid',?,?,?,?)
         ON CONFLICT(id) DO NOTHING`)
-        .bind(bookingId,m.service||'Online booking',m.description||'',m.booking_date||'',m.booking_time||'',customer.name,customer.email,customer.phone,customer.address,customer.town,customer.notes,session.amount_total,session.id,JSON.stringify({date:m.booking_date||'',timeSlot:m.booking_time||'',service:m.service||'',description:m.description||'',client:customer}),now,now).run();
+        .bind(bookingId,m.service||'Online booking',m.description||'',m.booking_date||'',m.booking_time||'',customer.name,customer.email,customer.phone,customer.address,customer.town,customer.notes,session.amount_total,session.id,JSON.stringify(bookingData),now,now).run();
+      await env.BOOKINGS_DB.prepare('UPDATE bookings SET customer_id=? WHERE id=?').bind(customer.email.trim().toLowerCase(),bookingId).run();
       row=await env.BOOKINGS_DB.prepare('SELECT id,stripe_session_id,payment_status,total_cents,currency FROM bookings WHERE id=?').bind(bookingId).first();
     }
 
