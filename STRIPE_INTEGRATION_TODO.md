@@ -1,53 +1,35 @@
-# Stripe and booking integration — current setup
+# Stripe and booking integration — website checkout
 
-## Server-side architecture
+## Current implementation
 
-- `functions/_lib/booking.js`: shared server-side price calculation, required-field validation, booking-date and arrival-window validation.
-- `functions/api/config.js`: exposes only `STRIPE_PUBLISHABLE_KEY`.
-- `functions/api/create-checkout-session.js`: validates the booking, recalculates the amount in EUR, writes a pending D1 record, then creates a Stripe Custom Checkout Session.
-- `functions/api/booking-status.js`: verifies the Checkout Session directly with Stripe before the website displays a paid receipt.
-- `functions/api/create-booking.js`: persists cash bookings in D1 as `cash_due`.
-- `functions/api/stripe-webhook.js`: verifies Stripe signatures and updates paid/expired booking status; processed event IDs are stored to avoid duplicate handling.
-- `migrations/0001_create_bookings.sql`: D1 schema for bookings and webhook events.
+- functions/_lib/booking.js validates booking details, recalculates service/add-on prices, checks repeat-customer eligibility, and calculates the final total including tips.
+- functions/_lib/customers.js pre-registers customer contact details in D1 without counting an unpaid checkout as a booking. Confirmed bookings increment the customer count.
+- functions/api/create-checkout-session.js calculates the discount on the server, accepts a bounded customer-entered tip, and creates separate Stripe line items for each service/add-on and the tip.
+- functions/api/booking-status.js verifies the Checkout Session directly with Stripe before the website displays a paid receipt. It can recover a missing D1 booking using verified Stripe metadata.
+- functions/api/create-booking.js saves cash bookings with the same server-side loyalty discount.
+- functions/api/stripe-webhook.js verifies Stripe signatures and stores the paid amount, pricing breakdown, tip, and selected services in D1.
+- index.html displays the optional tip input and shows the loyalty discount and tip in the payment summary.
 
-## Cloudflare Pages configuration required
+## Loyalty eligibility
 
-1. Create a D1 database (suggested name: `one-call-bookings`).
-2. Apply `migrations/0001_create_bookings.sql`.
-3. Add a D1 binding named exactly `BOOKINGS_DB` in Pages → Settings → Functions → D1 database bindings. Bind the database in both Production and Preview as applicable.
-4. Configure:
-   - `STRIPE_PUBLISHABLE_KEY`
-   - `STRIPE_SECRET_KEY` (server-side secret; never place in HTML)
-   - `STRIPE_WEBHOOK_SECRET`
-5. In Stripe Dashboard, configure webhook URL `https://YOUR-DOMAIN/api/stripe-webhook` for:
-   - `checkout.session.completed`
-   - `checkout.session.async_payment_succeeded`
-   - `checkout.session.async_payment_failed`
-   - `checkout.session.expired`
-6. Use matching Stripe test keys and webhook secret in Preview/Test first. Do not accept live payments until a successful end-to-end test is completed.
+The automatic repeat-customer discount is 10%. The backend matches the normalized customer email/customer_id and requires a previous booking whose booking_json contains jobStatus='completed' and completedAt within the previous 30 days. The timestamp must not be in the future. The discount applies to services and add-ons, not tips. The browser cannot choose a discount or submit a trusted total.
 
-## Checkout details
+The existing booking_json column stores the pricing breakdown and the job completion markers; this release does not require a D1 schema migration. Existing historical bookings are not automatically marked completed. A trusted staff/manager workflow still needs to write the completion markers only after the job is actually finished.
 
-- Stripe Checkout Session mode: `payment`.
-- Checkout UI mode: `custom` (required by the Custom Checkout Elements SDK used in the website).
-- Amount: calculated server-side from the selected service and add-ons; currency is EUR.
-- No Stripe Product or fixed Price ID is required.
-- Apple Pay / Google Pay availability depends on Stripe payment-method settings, device/browser eligibility, and domain verification.
-- The browser must supply the complete booking (service, scope, date, time, contact details and address) before checkout session creation.
-- A successful client-side confirmation is not treated as proof of payment. The return page checks the session with Stripe, and the signed webhook is the durable payment update.
+## Stripe visibility
 
-## End-to-end test checklist
+- Each selected main service/add-on is sent as its own Stripe Checkout line item.
+- The optional tip is sent as a separate Customer Tip line item and is not discounted.
+- Discounted line item descriptions show the original amount and the loyalty reduction.
+- Stripe Checkout Session and PaymentIntent metadata include subtotal, discount percentage/amount, tip, final total, customer and booking details, and selected service breakdown.
+- D1 stores the same breakdown in bookings.booking_json for future staff reporting.
 
-- Test each service type and add-on combination against the displayed total.
-- Verify Post-Renovation pricing is included in the server calculation.
-- Confirm empty name, phone, email, address, date or invalid email is rejected before payment.
-- Confirm invalid/unsupported arrival windows are rejected server-side.
-- Complete a Stripe test payment and confirm the D1 row becomes `paid`.
-- Abandon a Checkout Session and confirm the expiry webhook updates it to `expired`.
-- Create a cash booking and confirm the D1 row becomes `cash_due`.
-- Verify repeated webhook delivery does not create duplicate event records or duplicate bookings.
-- Test Apple Pay / Google Pay on eligible devices after enabling and verifying the domain in Stripe.
+## Deployment and testing
 
-## Important limitation before launch
+1. Confirm the existing BOOKINGS_DB D1 binding and Stripe secrets.
+2. No D1 migration is needed for this implementation.
+3. Test with Stripe test mode: a customer with a genuinely completed booking within 30 days, a customer without one, and both zero and non-zero tip amounts.
+4. Confirm that the Stripe line-item sum equals the final total and that the webhook stores the matching pricing breakdown.
+5. Do not infer completed work from a paid payment. The manager/staff completion workflow must record jobStatus='completed' and completedAt after the work is actually finished.
 
-The source-code integration is now prepared, but a real Cloudflare D1 database binding and Stripe environment secrets must be configured in the Cloudflare and Stripe dashboards. Those account-level settings cannot be inferred or safely created from this repository. Follow `DEPLOYMENT.md` before publishing live payments.
+The source code must be deployed to the Cloudflare Pages production project after merging to main. Do not switch to live Stripe keys until end-to-end tests pass.
