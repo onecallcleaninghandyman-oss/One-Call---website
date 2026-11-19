@@ -10,6 +10,8 @@ Required Cloudflare Pages environment variables (Settings > Variables and Secret
 Deploy after committing these files to the GitHub repository. Functions routes:
 GET  /api/config
 POST /api/create-checkout-session
+POST /api/create-booking
+GET  /api/booking-status
 POST /api/stripe-webhook
 
 Create a Stripe webhook endpoint pointing to https://YOUR-SITE.pages.dev/api/stripe-webhook and subscribe to checkout.session.completed. Use the signing secret in STRIPE_WEBHOOK_SECRET.
@@ -17,7 +19,7 @@ Create a Stripe webhook endpoint pointing to https://YOUR-SITE.pages.dev/api/str
 IMPORTANT:
 - Use Stripe TEST keys and a test webhook secret first. Do not use live keys until the full test payment is successful.
 - The server recalculates the service price from submitted booking selections. It does not trust a client-supplied total.
-- The webhook verifies Stripe's signature and logs verified completed payments. Durable booking storage, email notifications, and availability conflict prevention are not included yet; add these before relying on the website as a full booking-management system.
+- The webhook verifies Stripe's signature and persists confirmed paid bookings and customer records in D1. Staff scheduling/assignment, manager-controlled job completion, email notifications, and availability conflict prevention still require implementation.
 
 
 LOYALTY DISCOUNT + CUSTOMER TIPS (migration 0004)
