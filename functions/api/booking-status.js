@@ -43,6 +43,7 @@ export async function onRequestGet({request,env}) {
         VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,'eur','stripe','paid',?,?,?,?)
         ON CONFLICT(id) DO NOTHING`)
         .bind(bookingId,m.service||'Online booking',m.description||'',m.booking_date||'',m.booking_time||'',customer.name,customer.email,customer.phone,customer.address,customer.town,customer.notes,session.amount_total,subtotalCents,discountPercent,discountCents,tipCents,JSON.stringify(serviceItems),session.id,JSON.stringify(bookingData),now,now).run();
+      await env.BOOKINGS_DB.prepare('UPDATE bookings SET customer_id=? WHERE id=?').bind(customer.email.trim().toLowerCase(),bookingId).run();
       row=await env.BOOKINGS_DB.prepare('SELECT id,stripe_session_id,payment_status,total_cents,currency FROM bookings WHERE id=?').bind(bookingId).first();
     }
 
