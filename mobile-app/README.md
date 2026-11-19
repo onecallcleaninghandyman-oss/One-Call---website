@@ -19,7 +19,7 @@ The manager has full operational control, enforced by the backend:
 - Create and manage staff accounts; assign and reassign workers to bookings; set the required crew size and view team members.
 - Change booking dates and times; block and unblock staff accounts.
 - Apply customer discounts of 5%–15% through the website checkout backend. The website, not the app, calculates and applies the discount before Stripe Checkout.
-- Apply an order bonus of 5%–15%; the bonus calculation basis and recipient must be confirmed before implementation so the ledger is not populated with an assumed formula.
+- Award an individual cleaner a bonus of 5%–15% calculated from that cleaner's normal earnings for the booking (not from the customer's total order price). The bonus is added on top of the cleaner's normal earnings and recorded as a separate append-only ledger entry. It is intended as extra compensation for difficult or unusually dirty jobs. The manager selects the bonus percentage and the eligible cleaner(s).
 
 ## Backend integration
 - Reuse the existing Cloudflare Pages Functions backend and `BOOKINGS_DB` D1 binding.
