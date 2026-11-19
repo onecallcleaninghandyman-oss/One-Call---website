@@ -1,20 +1,31 @@
 ONE CALL CLEANING — CLOUDFLARE PAGES + STRIPE
 
-This archive includes Cloudflare Pages Functions in /functions/api.
+Existing Cloudflare Pages Functions are in /functions/api.
 
-Required Cloudflare Pages environment variables (Settings > Variables and Secrets):
-- STRIPE_PUBLISHABLE_KEY = your Stripe publishable key (pk_test_... for testing first)
-- STRIPE_SECRET_KEY = matching Stripe secret key (sk_test_... for testing first; mark as secret)
-- STRIPE_WEBHOOK_SECRET = webhook signing secret (whsec_...; mark as secret)
+Required Cloudflare Pages environment variables:
+- STRIPE_PUBLISHABLE_KEY = Stripe publishable key.
+- STRIPE_SECRET_KEY = matching Stripe secret key; keep server-side.
+- STRIPE_WEBHOOK_SECRET = webhook signing secret; keep server-side.
 
-Deploy after committing these files to the GitHub repository. Functions routes:
+Existing D1 binding:
+- BOOKINGS_DB
+
+Routes:
 GET  /api/config
 POST /api/create-checkout-session
+POST /api/create-booking
+GET  /api/booking-status
 POST /api/stripe-webhook
 
-Create a Stripe webhook endpoint pointing to https://YOUR-SITE.pages.dev/api/stripe-webhook and subscribe to checkout.session.completed. Use the signing secret in STRIPE_WEBHOOK_SECRET.
+Stripe webhook:
+Configure https://YOUR-DOMAIN/api/stripe-webhook for checkout.session.completed and checkout.session.async_payment_succeeded.
 
-IMPORTANT:
-- Use Stripe TEST keys and a test webhook secret first. Do not use live keys until the full test payment is successful.
-- The server recalculates the service price from submitted booking selections. It does not trust a client-supplied total.
-- The webhook verifies Stripe's signature and logs verified completed payments. Durable booking storage, email notifications, and availability conflict prevention are not included yet; add these before relying on the website as a full booking-management system.
+LOYALTY DISCOUNT + CUSTOMER TIPS
+- The website applies an automatic 10% repeat-customer discount only when the same normalized email/customer_id has a previous booking with jobStatus='completed' and completedAt within the preceding 30 days.
+- The discount is calculated server-side on services and selected add-ons. Tips are not discounted.
+- Customer contact details are pre-registered in D1 before payment without incrementing bookings_count. Abandoned checkouts do not count as bookings.
+- Customers can enter an optional tip in the embedded Stripe payment form. Stripe receives the tip as a separate line item.
+- Stripe Session and PaymentIntent metadata include selected services, subtotal, discount, tip and final total.
+- The webhook stores the payment breakdown in the existing bookings.booking_json field.
+
+No D1 schema migration is required for these changes. Existing bookings are not automatically considered completed. A trusted manager/staff workflow must set jobStatus='completed' and completedAt in booking_json only after the work is actually finished. Payment alone does not qualify a booking for loyalty discount.
