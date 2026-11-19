@@ -87,3 +87,64 @@ export function validateBooking(booking) {
 }
 export const json=(data,status=200)=>Response.json(data,{status,headers:{'Cache-Control':'no-store'}});
 export const bookingIdIsValid=id=>/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(id||''));
+
+
+export async function calculateRepeatCustomerPricing(db, customer, quote, now, tipCents = 0) {
+  const email = String(customer.email || '').trim().toLowerCase();
+  if (!email) throw new Error('Customer email is required to calculate repeat-customer pricing.');
+  if (!Number.isInteger(tipCents) || tipCents < 0 || tipCents > 100000) {
+    throw new Error('Tip must be between €0.00 and €1,000.00.');
+  }
+
+  const cutoff = new Date(Date.parse(now) - 30 * 24 * 60 * 60 * 1000).toISOString();
+  const previousCompleted = await db.prepare(`
+    SELECT id FROM bookings
+    WHERE (customer_id = ? OR lower(trim(customer_email)) = ?)
+      AND job_status = 'completed'
+      AND completed_at IS NOT NULL
+      AND completed_at >= ?
+      AND completed_at <= ?
+    ORDER BY completed_at DESC
+    LIMIT 1
+  `).bind(email, email, cutoff, now).first();
+
+  const subtotalCents = quote.amount;
+  const discountPercent = previousCompleted ? 10 : 0;
+  const discountCents = Math.round(subtotalCents * discountPercent / 100);
+  const rawItems = [
+    { name: quote.title, description: quote.description || '', amountCents: Math.round(quote.basePrice * 100) },
+    ...(quote.addonItems || []).map(item => ({
+      name: item.name,
+      description: item.name,
+      amountCents: Math.round(item.price * 100)
+    }))
+  ].filter(item => item.amountCents > 0);
+
+  // Allocate the exact order-level discount across Stripe's itemised service lines.
+  const allocations = rawItems.map((item, index) => {
+    const exact = subtotalCents ? item.amountCents * discountCents / subtotalCents : 0;
+    return { index, cents: Math.floor(exact), remainder: exact - Math.floor(exact) };
+  });
+  let unallocated = discountCents - allocations.reduce((sum, item) => sum + item.cents, 0);
+  allocations.sort((a, b) => b.remainder - a.remainder || a.index - b.index);
+  for (let i = 0; i < allocations.length && unallocated > 0; i++, unallocated--) allocations[i].cents++;
+  allocations.sort((a, b) => a.index - b.index);
+
+  const serviceItems = rawItems.map((item, index) => ({
+    ...item,
+    discountCents: allocations[index]?.cents || 0,
+    finalAmountCents: item.amountCents - (allocations[index]?.cents || 0)
+  }));
+  const totalCents = subtotalCents - discountCents + tipCents;
+  if (!Number.isInteger(totalCents) || totalCents < 1) throw new Error('Invalid final booking total.');
+
+  return {
+    subtotalCents,
+    discountPercent,
+    discountCents,
+    tipCents,
+    totalCents,
+    serviceItems,
+    previousCompletedBookingId: previousCompleted?.id || null
+  };
+}
