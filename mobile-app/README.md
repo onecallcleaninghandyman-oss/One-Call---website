@@ -29,7 +29,8 @@ The manager has full operational control, enforced by the backend:
 - Staff accounts are created/invited by authorized management; no public self-registration.
 
 ## Business rules
-- Customer discounts are implemented exclusively on the existing website booking/checkout flow. They are not part of this staff app. The website backend must calculate eligibility and discount before creating the Stripe payment session; only a previous booking with status `Completed` and a completion timestamp within the preceding 30 days qualifies.
+- The website automatically applies a 10% repeat-customer discount when the same normalized email/customer ID has a previous booking marked `completed` with a `completed_at` timestamp within the preceding 30 days. It is calculated server-side on services and add-ons, not tips. Customer discount handling remains exclusively on the website checkout flow, never in a customer-facing app.
+- The website pre-registers customer contact details in D1 before payment without counting abandoned checkouts as bookings. Customers may enter an optional tip during Stripe checkout; it is a separate, undiscounted Stripe line item.
 - Worker balances are calculated from an append-only ledger.
 - Preserve the agreed weekly settlement cycle: Monday totals are fixed; Monday–Wednesday is the repayment window; debtors are blocked Thursday morning; worker payouts are made Thursday.
 - Worker account deletion is manager-controlled. Financial records must be retained as required by law.
