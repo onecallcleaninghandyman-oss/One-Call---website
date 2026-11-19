@@ -1,5 +1,25 @@
 import 'package:flutter/material.dart';
 
+enum StaffRole { cleaner, upholsteryCleaner, handyman, manager, owner }
+
+extension StaffRoleLabel on StaffRole {
+  String get label => switch (this) {
+    StaffRole.cleaner => 'Cleaner',
+    StaffRole.upholsteryCleaner => 'Upholstery / Chemical Cleaning',
+    StaffRole.handyman => 'Handyman',
+    StaffRole.manager => 'Manager',
+    StaffRole.owner => 'Owner',
+  };
+}
+
+const appAccessGroups = <StaffRole>[
+  StaffRole.cleaner,
+  StaffRole.upholsteryCleaner,
+  StaffRole.handyman,
+  StaffRole.manager,
+  StaffRole.owner,
+];
+
 void main() => runApp(const OneCallApp());
 
 class OneCallApp extends StatelessWidget {
@@ -33,8 +53,6 @@ class AppShell extends StatefulWidget {
 
 class _AppShellState extends State<AppShell> {
   int _tab = 0;
-  // Role and identity must come from a verified backend session, never local input.
-  final String _previewRole = 'Worker';
 
   @override
   Widget build(BuildContext context) {
@@ -82,13 +100,13 @@ class _DashboardPage extends StatelessWidget {
       children: [
         Text('Welcome to One Call', style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold)),
         const SizedBox(height: 6),
-        Text('Worker workspace', style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: Colors.black54)),
+        Text('Staff workspace', style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: Colors.black54)),
         const SizedBox(height: 22),
         const _SummaryCard(icon: Icons.event_available, title: 'Upcoming jobs', value: '—', caption: 'Connect your account to load jobs'),
         const _SummaryCard(icon: Icons.payments_outlined, title: 'Company balance', value: '—', caption: 'Calculated from the verified finance ledger'),
         const _SummaryCard(icon: Icons.groups_outlined, title: 'My crew', value: '—', caption: 'Crew members are shown for each assigned job'),
         const SizedBox(height: 12),
-        const Text('This is the first UI foundation. Live account data will appear after secure sign-in and API integration.'),
+        const Text('Access is restricted to five staff groups: Cleaner, Upholstery / Chemical Cleaning, Handyman, Manager and Owner. Customers do not have app accounts.'),
       ],
     );
   }
