@@ -19,7 +19,7 @@ A separate Flutter application for Android and iOS, connected to the existing On
 - Staff accounts are created/invited by authorized management; no public self-registration.
 
 ## Business rules
-- Repeat-customer discount stays in the website booking/payment flow, not a customer app. Eligibility is server-side and requires a previous completed booking within 30 days.
+- Customer discounts are implemented exclusively on the existing website booking/checkout flow. They are not part of this staff app. The website backend must calculate eligibility and discount before creating the Stripe payment session; only a previous booking with status `Completed` and a completion timestamp within the preceding 30 days qualifies.
 - Worker balances are calculated from an append-only ledger.
 - Preserve the agreed weekly settlement cycle: Monday totals are fixed; Monday–Wednesday is the repayment window; debtors are blocked Thursday morning; worker payouts are made Thursday.
 - Worker account deletion is manager-controlled. Financial records must be retained as required by law.
